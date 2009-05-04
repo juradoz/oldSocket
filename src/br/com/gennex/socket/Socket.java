@@ -6,36 +6,43 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.SocketException;
-import java.util.LinkedList;
+import java.util.Observable;
 
 import org.apache.log4j.Logger;
 
 import br.com.gennex.interfaces.TcpController;
 import br.com.gennex.interfaces.TcpResponse;
 
-public abstract class Socket implements Runnable, TcpController {
+public abstract class Socket extends Observable implements Runnable,
+		TcpController {
+
+	public class EventConnected {
+
+	}
+
+	public class EventDisconnected {
+
+	}
 
 	public interface TcpMessageFilter {
 		public boolean accept(String message);
 	}
 
-	private static LinkedList<Socket> sockets = new LinkedList<Socket>();
-
 	protected java.net.Socket socket;
 
 	private boolean connected = true;
+
 	private BufferedReader bufferedreader;
 	private PrintWriter printwriter;
 
 	private TcpMessageFilter inputFilter = null;
-
 	private TcpMessageFilter outputFilter = null;
 
-	public Socket(java.net.Socket conexao) {
+	public Socket(java.net.Socket socket) {
 		super();
-		this.socket = conexao;
+		this.socket = socket;
 		Logger.getLogger(getClass()).info(
-				new StringBuffer("Connect from ").append(conexao
+				new StringBuffer("Connect from ").append(socket
 						.getInetAddress().getHostName()));
 		try {
 			bufferedreader = new BufferedReader(new InputStreamReader(
@@ -44,10 +51,6 @@ public abstract class Socket implements Runnable, TcpController {
 		} catch (IOException e) {
 			Logger.getLogger(getClass()).error(e.getMessage(), e);
 		}
-	}
-
-	private void addSocket(Socket e) {
-		sockets.add(e);
 	}
 
 	public void disconnect() throws IOException {
@@ -72,12 +75,9 @@ public abstract class Socket implements Runnable, TcpController {
 
 	protected abstract void processStringRequest(String s) throws Exception;
 
-	private void removeSocket(Socket e) {
-		sockets.remove(e);
-	}
-
 	public void run() {
-		addSocket(this);
+		setChanged();
+		notifyObservers(new EventConnected());
 		try {
 			do {
 				String s = bufferedreader.readLine();
@@ -101,7 +101,8 @@ public abstract class Socket implements Runnable, TcpController {
 					new StringBuffer("Disconnect from ").append(socket
 							.getInetAddress().getHostName()));
 			connected = false;
-			removeSocket(this);
+			setChanged();
+			notifyObservers(new EventDisconnected());
 		}
 
 	}
