@@ -15,8 +15,11 @@ import br.com.gennex.interfaces.SocketFactory;
 import br.com.gennex.socket.Socket;
 
 /**
- * @author Daniel Jurado Classe que implementa um client TCP que se mantem
- *         conectado.
+ * 
+ * Classe que implementa um client TCP que se mantem conectado.
+ * 
+ * @author Daniel Jurado
+ * 
  */
 public class ClientSocket implements Runnable, Observer {
 

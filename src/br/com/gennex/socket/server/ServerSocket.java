@@ -11,8 +11,18 @@ import org.apache.log4j.Logger;
 import br.com.gennex.interfaces.SocketFactory;
 import br.com.gennex.socket.Socket;
 
+/**
+ * Classe que implementa um servidor TCP que ouve as conexões e cria threads
+ * específicas para cada comportamento.
+ * 
+ * @author Daniel Jurado
+ * 
+ */
 public class ServerSocket implements Runnable, Observer {
 
+	/**
+	 * Lista em que são mantidos todos os sockets atualmente ativos.
+	 */
 	private LinkedList<Socket> sockets = new LinkedList<Socket>();
 
 	private int port;
@@ -35,6 +45,7 @@ public class ServerSocket implements Runnable, Observer {
 		this.port = port;
 		this.socketFactory = socketFactory;
 	}
+
 	private void addSocket(Socket socket) {
 		sockets.add(socket);
 	}
