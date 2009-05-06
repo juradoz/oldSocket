@@ -40,6 +40,10 @@ public class ClientSocket implements Runnable, Observer {
 		if (getSocket() != null)
 			return;
 
+		if (getHost() == null || getHost().length() == 0 || getPort() <= 0) {
+			return;
+		}
+
 		InetAddress addr = null;
 		try {
 			addr = InetAddress.getByName(getHost());
@@ -125,6 +129,8 @@ public class ClientSocket implements Runnable, Observer {
 	 *            uma nova se inicia.
 	 */
 	public final void setHost(String host) {
+		if (host == null || host.length() <= 0)
+			throw new InvalidParameterException("invalid host.");
 		if (getHost().equalsIgnoreCase(host))
 			return;
 		if (getSocket() != null && getSocket().isConnected())
@@ -143,6 +149,8 @@ public class ClientSocket implements Runnable, Observer {
 	 *            uma nova se inicia.
 	 */
 	public final void setPort(int port) {
+		if (port <= 0)
+			throw new InvalidParameterException("invalid port");
 		if (getPort() == port)
 			return;
 		if (getSocket() != null && getSocket().isConnected())
@@ -183,6 +191,12 @@ public class ClientSocket implements Runnable, Observer {
 		if (!(arg instanceof Socket.EventDisconnected))
 			return;
 		setSocket(null);
+	}
+
+	public void disconnect() throws IOException {
+		this.host = null;
+		this.port = 0;
+		this.socket.disconnect();
 	}
 
 }
