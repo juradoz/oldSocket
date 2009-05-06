@@ -6,12 +6,14 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.Observable;
 
 import org.apache.log4j.Logger;
 
 import br.com.gennex.interfaces.TcpController;
 import br.com.gennex.interfaces.TcpResponse;
+import br.com.gennex.socket.tcpcommand.messages.responses.GennexResponse;
 
 public abstract class Socket extends Observable implements Runnable,
 		TcpController {
@@ -78,6 +80,7 @@ public abstract class Socket extends Observable implements Runnable,
 	public void run() {
 		setChanged();
 		notifyObservers(new EventConnected());
+		send(new GennexResponse(getClass().getSimpleName().concat("()")));
 		try {
 			do {
 				String s = bufferedreader.readLine();
@@ -93,6 +96,8 @@ public abstract class Socket extends Observable implements Runnable,
 				}
 			} while (Thread.currentThread().isAlive());
 		} catch (SocketException e) {
+			// ignore
+		} catch (SocketTimeoutException e) {
 			// ignore
 		} catch (IOException e) {
 			Logger.getLogger(getClass()).error(e.getMessage(), e);
