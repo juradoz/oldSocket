@@ -1,6 +1,5 @@
 package br.com.gennex.socket.server;
 
-import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.util.LinkedList;
 import java.util.Observable;
@@ -81,10 +80,10 @@ public class ServerSocket implements Runnable, Observer {
 					new Thread(threadSocket, "Client "
 							+ socket.getInetAddress().getHostName()).start();
 				} while (Thread.currentThread().isAlive());
-			} catch (IOException e) {
+			} catch (Exception e) {
 				Logger.getLogger(getClass()).fatal(e.getMessage(), e);
 				try {
-					Thread.sleep(10000);
+					Thread.sleep(1000);
 				} catch (InterruptedException f) {
 					Logger.getLogger(getClass()).error(f.getMessage(), f);
 				}

@@ -8,6 +8,7 @@ import java.net.UnknownHostException;
 import java.security.InvalidParameterException;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.TimerTask;
 
 import org.apache.log4j.Logger;
 
@@ -21,7 +22,7 @@ import br.com.gennex.socket.Socket;
  * @author Daniel Jurado
  * 
  */
-public class ClientSocket implements Runnable, Observer {
+public class ClientSocket extends TimerTask implements Observer {
 
 	private Socket socket = null;
 	private String host;
@@ -37,7 +38,7 @@ public class ClientSocket implements Runnable, Observer {
 	}
 
 	private void checkConnection() {
-		if (getSocket() != null)
+		if (socket != null)
 			return;
 
 		if (getHost() == null || getHost().length() == 0 || getPort() <= 0) {
@@ -54,19 +55,19 @@ public class ClientSocket implements Runnable, Observer {
 
 		SocketAddress sockaddr = new InetSocketAddress(addr, getPort());
 
-		java.net.Socket socket = new java.net.Socket();
+		java.net.Socket rawSocket = new java.net.Socket();
 
 		try {
-			socket.connect(sockaddr);
+			rawSocket.connect(sockaddr);
 		} catch (IOException e) {
 			Logger.getLogger(getClass()).error(e.getMessage(), e);
 			return;
 		}
 
-		setSocket(socketFactory.createSocket(socket));
-		getSocket().addObserver(this);
-		new Thread(getSocket(), "Server "
-				+ socket.getInetAddress().getHostName()).start();
+		setSocket(socketFactory.createSocket(rawSocket));
+		socket.addObserver(this);
+		new Thread(socket, "Server " + rawSocket.getInetAddress().getHostName())
+				.start();
 	}
 
 	/**
@@ -90,7 +91,18 @@ public class ClientSocket implements Runnable, Observer {
 		return reconnectInterval;
 	}
 
-	private Socket getSocket() {
+	public class SocketNaoConectado extends Exception {
+		public SocketNaoConectado(String string) {
+			super(string);
+		}
+
+		private static final long serialVersionUID = 1L;
+
+	}
+
+	public Socket getSocket() throws SocketNaoConectado {
+		if (socket == null)
+			throw new SocketNaoConectado("not connected");
 		return socket;
 	}
 
@@ -109,17 +121,7 @@ public class ClientSocket implements Runnable, Observer {
 	 */
 	@Override
 	public final void run() {
-		do {
-			try {
-				checkConnection();
-			} finally {
-				try {
-					Thread.sleep(getReconnectInterval());
-				} catch (InterruptedException e) {
-					Logger.getLogger(getClass()).error(e.getMessage(), e);
-				}
-			}
-		} while (Thread.currentThread().isAlive());
+		checkConnection();
 	}
 
 	/**
@@ -133,9 +135,9 @@ public class ClientSocket implements Runnable, Observer {
 			throw new InvalidParameterException("invalid host.");
 		if (getHost().equalsIgnoreCase(host))
 			return;
-		if (getSocket() != null && getSocket().isConnected())
+		if (socket != null && socket.isConnected())
 			try {
-				getSocket().disconnect();
+				socket.disconnect();
 			} catch (IOException e) {
 				Logger.getLogger(getClass()).error(e.getMessage(), e);
 			}
@@ -153,9 +155,9 @@ public class ClientSocket implements Runnable, Observer {
 			throw new InvalidParameterException("invalid port");
 		if (getPort() == port)
 			return;
-		if (getSocket() != null && getSocket().isConnected())
+		if (socket != null && socket.isConnected())
 			try {
-				getSocket().disconnect();
+				socket.disconnect();
 			} catch (IOException e) {
 				Logger.getLogger(getClass()).error(e.getMessage(), e);
 			}
