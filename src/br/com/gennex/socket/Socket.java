@@ -12,8 +12,8 @@ import java.util.Observable;
 import org.apache.log4j.Logger;
 
 import br.com.gennex.interfaces.TcpController;
-import br.com.gennex.interfaces.TcpResponse;
-import br.com.gennex.socket.tcpcommand.messages.responses.GennexResponse;
+import br.com.gennex.interfaces.TcpMessage;
+import br.com.gennex.socket.tcpcommand.messages.responses.FppsResponse;
 
 public abstract class Socket extends Observable implements Runnable,
 		TcpController {
@@ -30,7 +30,7 @@ public abstract class Socket extends Observable implements Runnable,
 		public boolean accept(String message);
 	}
 
-	protected java.net.Socket socket;
+	protected java.net.Socket rawSocket;
 
 	private boolean connected = true;
 
@@ -40,86 +40,119 @@ public abstract class Socket extends Observable implements Runnable,
 	private TcpMessageFilter inputFilter = null;
 	private TcpMessageFilter outputFilter = null;
 
+	/**
+	 * @param socket
+	 *            o Socket da conexão que será gerenciado.
+	 */
 	public Socket(java.net.Socket socket) {
 		super();
-		this.socket = socket;
+		this.rawSocket = socket;
 		Logger.getLogger(getClass()).info(
 				new StringBuffer("Connect from ").append(socket
 						.getInetAddress().getHostName()));
 		try {
 			bufferedreader = new BufferedReader(new InputStreamReader(
-					this.socket.getInputStream()));
-			printwriter = new PrintWriter(this.socket.getOutputStream(), true);
+					this.rawSocket.getInputStream()));
+			printwriter = new PrintWriter(this.rawSocket.getOutputStream(),
+					true);
 		} catch (IOException e) {
 			Logger.getLogger(getClass()).error(e.getMessage(), e);
 		}
 	}
 
+	/**
+	 * Desconecta o socket.
+	 * 
+	 * @throws IOException
+	 */
 	public void disconnect() throws IOException {
-		socket.close();
+		rawSocket.close();
 	}
 
-	private TcpMessageFilter getInputFilter() {
+	private synchronized TcpMessageFilter getInputFilter() {
 		return inputFilter;
 	}
 
-	private TcpMessageFilter getOutputFilter() {
+	private synchronized TcpMessageFilter getOutputFilter() {
 		return outputFilter;
 	}
 
+	/**
+	 * Devolve o OutputStream do socket conectado.
+	 * 
+	 * @return o OutputStream do socket conectado.
+	 * @throws IOException
+	 */
 	public OutputStream getSocketOutputStream() throws IOException {
-		return socket.getOutputStream();
+		return rawSocket.getOutputStream();
 	}
 
+	/**
+	 * Devolve a situação atual da conexão do socket.
+	 * 
+	 * @return true se conectado, false caso desconectado.
+	 */
 	public boolean isConnected() {
 		return connected;
+	}
+
+	/**
+	 * Loga uma mensagem, respeitando um determinado filtro.
+	 * 
+	 * @param filter
+	 *            the filter to be applied
+	 * @param message
+	 *            the message to log
+	 */
+	private void logMessage(TcpMessageFilter filter, String message) {
+		if (filter != null && filter.accept(message))
+			Logger.getLogger(getClass()).info(message);
+		else if (Logger.getLogger(getClass()).isDebugEnabled())
+			Logger.getLogger(getClass()).debug(message);
+	}
+
+	/**
+	 * Loga uma mensagem recebida.
+	 * 
+	 * @param message
+	 *            the received message
+	 */
+	private void logReceived(String message) {
+		logMessage(getInputFilter(), new StringBuffer("Received: ").append(
+				message).toString());
+	}
+
+	/**
+	 * Loga uma mensagem enviada.
+	 * 
+	 * @param message
+	 *            the sent message
+	 */
+	private void logSent(String message) {
+		logMessage(getOutputFilter(), new StringBuffer("Sent: ")
+				.append(message).toString());
+	}
+
+	private void notifyConnection() {
+		setChanged();
+		notifyObservers(new EventConnected());
+	}
+
+	private void notifyDisconnection() {
+		setChanged();
+		notifyObservers(new EventDisconnected());
 	}
 
 	protected abstract void processStringRequest(String s) throws Exception;
 
 	public void run() {
-		setChanged();
-		notifyObservers(new EventConnected());
-		send(new GennexResponse(getClass().getSimpleName().concat("()")));
-		try {
-			do {
-				String s = bufferedreader.readLine();
-				if (s == null)
-					break;
-				if (getInputFilter() == null || getInputFilter().accept(s)) {
-					Logger.getLogger(getClass()).info("Received: " + s);
-				}
-				try {
-					processStringRequest(s);
-				} catch (Exception e) {
-					Logger.getLogger(getClass()).error(e.getMessage(), e);
-				}
-			} while (Thread.currentThread().isAlive());
-		} catch (SocketException e) {
-			// ignore
-		} catch (SocketTimeoutException e) {
-			// ignore
-		} catch (IOException e) {
-			Logger.getLogger(getClass()).error(e.getMessage(), e);
-		} finally {
-			Logger.getLogger(getClass()).info(
-					new StringBuffer("Disconnect from ").append(socket
-							.getInetAddress().getHostName()));
-			connected = false;
-			setChanged();
-			notifyObservers(new EventDisconnected());
-		}
-
+		socketLifeCycle();
 	}
 
-	public void send(Object obj) {
-		send(obj.toString());
-	}
+	private void send(String message) {
 
-	public void send(String message) {
-		if (getOutputFilter() == null || getOutputFilter().accept(message)) {
-			Logger.getLogger(getClass()).info("Send: " + message);
-		}
+		logSent(message);
+
 		try {
 			printwriter.print(message + "\r\n");
 			printwriter.flush();
@@ -128,15 +161,64 @@ public abstract class Socket extends Observable implements Runnable,
 		}
 	}
 
-	public void send(TcpResponse response) {
+	public void send(TcpMessage response) {
 		send(response.toString());
 	}
 
-	public void setInputFilter(TcpMessageFilter inputFilter) {
+	private void sendHello() {
+		send(new FppsResponse(getClass().getSimpleName().concat("()")));
+	}
+
+	public synchronized void setInputFilter(TcpMessageFilter inputFilter) {
 		this.inputFilter = inputFilter;
 	}
 
-	public void setOutputFilter(TcpMessageFilter outputFilter) {
+	public synchronized void setOutputFilter(TcpMessageFilter outputFilter) {
 		this.outputFilter = outputFilter;
+	}
+
+	private void socketLifeCycle() {
+		notifyConnection();
+		sendHello();
+		try {
+			waitLines();
+		} catch (SocketException e) {
+			if (Logger.getLogger(getClass()).isDebugEnabled())
+				Logger.getLogger(getClass()).debug(e.getMessage());
+		} catch (SocketTimeoutException e) {
+			Logger.getLogger(getClass()).warn(e.getMessage());
+		} catch (IOException e) {
+			Logger.getLogger(getClass()).error(e.getMessage(), e);
+		} finally {
+			Logger.getLogger(getClass()).info(
+					new StringBuffer("Disconnect from ").append(rawSocket
+							.getInetAddress().getHostName()));
+			connected = false;
+			notifyDisconnection();
+		}
+	}
+
+	private void waitLines() throws IOException {
+		do {
+			String s = bufferedreader.readLine();
+			if (s == null)
+				break;
+
+			logReceived(s);
+
+			try {
+				processStringRequest(s);
+			} catch (Exception e) {
+				Logger.getLogger(getClass()).error(e.getMessage(), e);
+			}
+		} while (Thread.currentThread().isAlive());
+	}
+
+	protected java.net.Socket getRawSocket() {
+		return this.rawSocket;
+	}
+
+	public java.net.InetAddress getInetAddress() {
+		return getRawSocket().getInetAddress();
 	}
 }

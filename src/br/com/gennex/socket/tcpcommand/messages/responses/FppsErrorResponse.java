@@ -2,7 +2,7 @@ package br.com.gennex.socket.tcpcommand.messages.responses;
 
 import br.com.gennex.interfaces.TcpRequest;
 
-public class GennexErrorResponse extends GennexResponse {
+public class FppsErrorResponse extends FppsResponse {
 
 	public static final String errorCommand = "InvalidRequest";
 
@@ -10,16 +10,16 @@ public class GennexErrorResponse extends GennexResponse {
 
 	private Exception originalException;
 
-	public GennexErrorResponse() {
+	public FppsErrorResponse() {
 		super(errorCommand);
 	}
 
-	public GennexErrorResponse(TcpRequest originalRequest) {
+	public FppsErrorResponse(TcpRequest originalRequest) {
 		super(errorCommand);
 		setOriginalRequest(originalRequest);
 	}
 
-	public GennexErrorResponse(TcpRequest originalRequest,
+	public FppsErrorResponse(TcpRequest originalRequest,
 			Exception originalException) {
 		super(errorCommand);
 		setOriginalRequest(originalRequest);
@@ -28,10 +28,9 @@ public class GennexErrorResponse extends GennexResponse {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (!(obj instanceof GennexResponse))
+		if (!(obj instanceof FppsResponse))
 			return false;
-		return ((GennexResponse) obj).getCommand().equalsIgnoreCase(
-				getCommand());
+		return ((FppsResponse) obj).getCommand().equalsIgnoreCase(getCommand());
 	}
 
 	private void setOriginalException(Exception originalException) {

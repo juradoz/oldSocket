@@ -8,7 +8,7 @@ import br.com.gennex.interfaces.TcpRequest;
 import br.com.gennex.interfaces.TcpRequestHandler;
 import br.com.gennex.interfaces.TcpResponse;
 import br.com.gennex.socket.tcpcommand.messages.requests.FppsRequestCommand;
-import br.com.gennex.socket.tcpcommand.messages.responses.GennexErrorResponse;
+import br.com.gennex.socket.tcpcommand.messages.responses.FppsErrorResponse;
 
 public class TcpCommandSocket extends br.com.gennex.socket.Socket {
 
@@ -30,14 +30,14 @@ public class TcpCommandSocket extends br.com.gennex.socket.Socket {
 			Logger.getLogger(getClass()).debug(
 					new StringBuffer("Invalid request: ").append(request
 							.getTcpMessage()));
-		response = new GennexErrorResponse(request, e);
+		response = new FppsErrorResponse(request, e);
 		return response;
 	}
 
 	private TcpResponse handleRequestException(TcpRequest request, Exception e) {
 		TcpResponse response;
 		Logger.getLogger(getClass()).error(e.getMessage(), e);
-		response = new GennexErrorResponse(request, e);
+		response = new FppsErrorResponse(request, e);
 		return response;
 	}
 

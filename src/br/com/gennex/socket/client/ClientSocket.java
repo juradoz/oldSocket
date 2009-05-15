@@ -24,10 +24,19 @@ import br.com.gennex.socket.Socket;
  */
 public class ClientSocket extends TimerTask implements Observer {
 
+	public class SocketNaoConectado extends Exception {
+		private static final long serialVersionUID = 1L;
+
+		public SocketNaoConectado(String string) {
+			super(string);
+		}
+
+	}
 	private Socket socket = null;
 	private String host;
 	private int port;
 	private SocketFactory socketFactory;
+
 	private int reconnectInterval = 10000;
 
 	public ClientSocket(String host, int port, SocketFactory socketFactory) {
@@ -70,6 +79,12 @@ public class ClientSocket extends TimerTask implements Observer {
 				.start();
 	}
 
+	public void disconnect() throws IOException {
+		this.host = null;
+		this.port = 0;
+		this.socket.disconnect();
+	}
+
 	/**
 	 * @return o host atual onde o socket se conecta.
 	 */
@@ -89,15 +104,6 @@ public class ClientSocket extends TimerTask implements Observer {
 	 */
 	public final int getReconnectInterval() {
 		return reconnectInterval;
-	}
-
-	public class SocketNaoConectado extends Exception {
-		public SocketNaoConectado(String string) {
-			super(string);
-		}
-
-		private static final long serialVersionUID = 1L;
-
 	}
 
 	public Socket getSocket() throws SocketNaoConectado {
@@ -193,12 +199,6 @@ public class ClientSocket extends TimerTask implements Observer {
 		if (!(arg instanceof Socket.EventDisconnected))
 			return;
 		setSocket(null);
-	}
-
-	public void disconnect() throws IOException {
-		this.host = null;
-		this.port = 0;
-		this.socket.disconnect();
 	}
 
 }

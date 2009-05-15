@@ -1,7 +1,7 @@
 package br.com.gennex.socket.tcpcommand.messages;
 
 import br.com.gennex.interfaces.TcpRequestCommand;
-import br.com.gennex.socket.tcpcommand.messages.responses.GennexResponse;
+import br.com.gennex.socket.tcpcommand.messages.responses.FppsResponse;
 
 public abstract class FppsMessage implements TcpRequestCommand {
 
@@ -33,9 +33,9 @@ public abstract class FppsMessage implements TcpRequestCommand {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (!(obj instanceof GennexResponse))
+		if (!(obj instanceof FppsResponse))
 			return false;
-		return ((GennexResponse) obj).getTcpMessage().equalsIgnoreCase(
+		return ((FppsResponse) obj).getTcpMessage().equalsIgnoreCase(
 				this.getTcpMessage());
 	}
 
