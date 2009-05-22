@@ -133,14 +133,22 @@ public abstract class Socket extends Observable implements Runnable,
 				.append(message).toString());
 	}
 
+	private void raiseEvent(Object event) {
+		try {
+			setChanged();
+			notifyObservers(event);
+		} catch (Exception e) {
+			Logger.getLogger(getClass()).error(e.getMessage(), e);
+		}
+
+	}
+
 	private void notifyConnection() {
-		setChanged();
-		notifyObservers(new EventConnected());
+		raiseEvent(new EventConnected());
 	}
 
 	private void notifyDisconnection() {
-		setChanged();
-		notifyObservers(new EventDisconnected());
+		raiseEvent(new EventDisconnected());
 	}
 
 	protected abstract void processStringRequest(String s) throws Exception;
