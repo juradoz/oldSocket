@@ -1,9 +1,6 @@
 package br.com.gennex.socket.server;
 
 import java.security.InvalidParameterException;
-import java.util.LinkedList;
-import java.util.Observable;
-import java.util.Observer;
 
 import org.apache.log4j.Logger;
 
@@ -17,12 +14,7 @@ import br.com.gennex.socket.Socket;
  * @author Daniel Jurado
  * 
  */
-public class ServerSocket implements Runnable, Observer {
-
-	/**
-	 * Lista em que são mantidos todos os sockets atualmente ativos.
-	 */
-	private LinkedList<Socket> sockets = new LinkedList<Socket>();
+public class ServerSocket implements Runnable {
 
 	private int port;
 
@@ -45,19 +37,11 @@ public class ServerSocket implements Runnable, Observer {
 		this.socketFactory = socketFactory;
 	}
 
-	private void addSocket(Socket socket) {
-		sockets.add(socket);
-	}
-
 	/**
 	 * @return a porta onde o servidor atualmente escuta.
 	 */
 	public final int getPort() {
 		return port;
-	}
-
-	private void removeSocket(Socket socket) {
-		sockets.remove(socket);
 	}
 
 	/*
@@ -75,8 +59,6 @@ public class ServerSocket implements Runnable, Observer {
 				do {
 					java.net.Socket socket = server.accept();
 					Socket threadSocket = socketFactory.createSocket(socket);
-					threadSocket.addObserver(this);
-					addSocket(threadSocket);
 					new Thread(threadSocket, "Client "
 							+ socket.getInetAddress().getHostName()).start();
 				} while (Thread.currentThread().isAlive());
@@ -90,18 +72,6 @@ public class ServerSocket implements Runnable, Observer {
 			}
 		} while (Thread.currentThread().isAlive());
 
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.util.Observer#update(java.util.Observable, java.lang.Object)
-	 */
-	@Override
-	public final void update(Observable o, Object arg) {
-		if (arg instanceof Socket.EventDisconnected) {
-			removeSocket((Socket) o);
-		}
 	}
 
 }
