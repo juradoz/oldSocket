@@ -32,6 +32,7 @@ public class ClientSocket extends TimerTask implements Observer {
 		}
 
 	}
+
 	private Socket socket = null;
 	private String host;
 	private int port;
@@ -58,7 +59,8 @@ public class ClientSocket extends TimerTask implements Observer {
 		try {
 			addr = InetAddress.getByName(getHost());
 		} catch (UnknownHostException e) {
-			Logger.getLogger(getClass()).error(e.getMessage(), e);
+			Logger.getLogger(getClass()).error(
+					"Host nao encontrado! " + getHost());
 			return;
 		}
 
