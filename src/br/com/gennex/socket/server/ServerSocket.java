@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 
 import br.com.gennex.interfaces.SocketFactory;
 import br.com.gennex.socket.Socket;
+import br.com.gennex.socket.model.ServerPort;
 
 /**
  * Classe que implementa um servidor TCP que ouve as conexões e cria threads
@@ -16,7 +17,7 @@ import br.com.gennex.socket.Socket;
  */
 public class ServerSocket implements Runnable {
 
-	private int port;
+	private ServerPort serverPort;
 
 	private SocketFactory socketFactory;
 
@@ -27,21 +28,21 @@ public class ServerSocket implements Runnable {
 	 *            a factory que deve criar os sockets de acordo com os
 	 *            comportamentos esperados.
 	 */
-	public ServerSocket(int port, SocketFactory socketFactory) {
+	public ServerSocket(ServerPort serverPort, SocketFactory socketFactory) {
 		super();
-		if (port <= 0)
+		if (serverPort == null)
 			throw new InvalidParameterException("invalid port");
 		if (socketFactory == null)
 			throw new InvalidParameterException("invalid socketFactory");
-		this.port = port;
+		this.serverPort = serverPort;
 		this.socketFactory = socketFactory;
 	}
 
 	/**
 	 * @return a porta onde o servidor atualmente escuta.
 	 */
-	public final int getPort() {
-		return port;
+	public final ServerPort getServerPort() {
+		return serverPort;
 	}
 
 	/*
@@ -53,7 +54,8 @@ public class ServerSocket implements Runnable {
 	public final void run() {
 		do {
 			try {
-				java.net.ServerSocket server = new java.net.ServerSocket(port);
+				java.net.ServerSocket server = new java.net.ServerSocket(
+						getServerPort().getPort());
 				Logger.getLogger(getClass()).info(
 						"Ready to accept connections...");
 				do {

@@ -14,6 +14,8 @@ import org.apache.log4j.Logger;
 
 import br.com.gennex.interfaces.SocketFactory;
 import br.com.gennex.socket.Socket;
+import br.com.gennex.socket.model.ServerName;
+import br.com.gennex.socket.model.ServerPort;
 
 /**
  * 
@@ -34,16 +36,17 @@ public class ClientSocket extends TimerTask implements Observer {
 	}
 
 	private Socket socket = null;
-	private String host;
-	private int port;
+	private ServerName serverName;
+	private ServerPort serverPort;
 	private SocketFactory socketFactory;
 
 	private int reconnectInterval = 10000;
 
-	public ClientSocket(String host, int port, SocketFactory socketFactory) {
+	public ClientSocket(ServerName host, ServerPort port,
+			SocketFactory socketFactory) {
 		super();
-		this.host = host;
-		this.port = port;
+		this.serverName = host;
+		this.serverPort = port;
 		this.socketFactory = socketFactory;
 	}
 
@@ -51,20 +54,21 @@ public class ClientSocket extends TimerTask implements Observer {
 		if (socket != null)
 			return;
 
-		if (getHost() == null || getHost().length() == 0 || getPort() <= 0) {
+		if (getServerName() == null || getServerPort() == null) {
 			return;
 		}
 
 		InetAddress addr = null;
 		try {
-			addr = InetAddress.getByName(getHost());
+			addr = InetAddress.getByName(getServerName().getName());
 		} catch (UnknownHostException e) {
 			Logger.getLogger(getClass()).error(
-					"Host nao encontrado! " + getHost());
+					"Host nao encontrado! " + getServerName());
 			return;
 		}
 
-		SocketAddress sockaddr = new InetSocketAddress(addr, getPort());
+		SocketAddress sockaddr = new InetSocketAddress(addr, getServerPort()
+				.getPort());
 
 		java.net.Socket rawSocket = new java.net.Socket();
 
@@ -82,23 +86,23 @@ public class ClientSocket extends TimerTask implements Observer {
 	}
 
 	public void disconnect() throws IOException {
-		this.host = null;
-		this.port = 0;
+		this.serverName = null;
+		this.serverPort = null;
 		this.socket.disconnect();
 	}
 
 	/**
 	 * @return o host atual onde o socket se conecta.
 	 */
-	public final String getHost() {
-		return host;
+	public final ServerName getServerName() {
+		return serverName;
 	}
 
 	/**
 	 * @return a porta onde o socket atualmente se conecta.
 	 */
-	public final int getPort() {
-		return port;
+	public final ServerPort getServerPort() {
+		return serverPort;
 	}
 
 	/**
@@ -138,10 +142,10 @@ public class ClientSocket extends TimerTask implements Observer {
 	 *            modificado enquanto uma conexão está ativa, ela é terminada e
 	 *            uma nova se inicia.
 	 */
-	public final void setHost(String host) {
-		if (host == null || host.length() <= 0)
+	public final void setHost(ServerName host) {
+		if (host == null)
 			throw new InvalidParameterException("invalid host.");
-		if (getHost().equalsIgnoreCase(host))
+		if (getServerName().equals(host))
 			return;
 		if (socket != null && socket.isConnected())
 			try {
@@ -149,7 +153,7 @@ public class ClientSocket extends TimerTask implements Observer {
 			} catch (IOException e) {
 				Logger.getLogger(getClass()).error(e.getMessage(), e);
 			}
-		this.host = host;
+		this.serverName = host;
 	}
 
 	/**
@@ -158,10 +162,10 @@ public class ClientSocket extends TimerTask implements Observer {
 	 *            modificado enquanto uma conexão está ativa, ela é terminada e
 	 *            uma nova se inicia.
 	 */
-	public final void setPort(int port) {
-		if (port <= 0)
+	public final void setPort(ServerPort port) {
+		if (port == null)
 			throw new InvalidParameterException("invalid port");
-		if (getPort() == port)
+		if (getServerPort().equals(port))
 			return;
 		if (socket != null && socket.isConnected())
 			try {
@@ -169,7 +173,7 @@ public class ClientSocket extends TimerTask implements Observer {
 			} catch (IOException e) {
 				Logger.getLogger(getClass()).error(e.getMessage(), e);
 			}
-		this.port = port;
+		this.serverPort = port;
 	}
 
 	/**
