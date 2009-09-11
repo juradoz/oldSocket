@@ -3,6 +3,11 @@ package br.com.gennex.socket.model;
 import java.security.InvalidParameterException;
 
 public class ServerName {
+	@Override
+	public String toString() {
+		return getServerName();
+	}
+
 	private String serverName;
 
 	public String getServerName() {

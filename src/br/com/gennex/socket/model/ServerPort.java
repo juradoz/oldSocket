@@ -16,6 +16,11 @@ public class ServerPort {
 	}
 
 	@Override
+	public String toString() {
+		return String.valueOf(getServerPort());
+	}
+
+	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
