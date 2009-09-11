@@ -1,16 +1,18 @@
 package br.com.gennex.socket.model;
 
+import java.security.InvalidParameterException;
+
 public class ServerPort {
-	private int port;
+	private int serverPort;
 
 	public ServerPort(int port) {
 		if (port <= 0)
-			throw new IllegalArgumentException();
-		this.port = port;
+			throw new InvalidParameterException();
+		this.serverPort = port;
 	}
 
-	public int getPort() {
-		return port;
+	public int getServerPort() {
+		return serverPort;
 	}
 
 	@Override
@@ -22,7 +24,7 @@ public class ServerPort {
 		if (getClass() != obj.getClass())
 			return false;
 		ServerPort other = (ServerPort) obj;
-		if (port != other.port)
+		if (serverPort != other.serverPort)
 			return false;
 		return true;
 	}

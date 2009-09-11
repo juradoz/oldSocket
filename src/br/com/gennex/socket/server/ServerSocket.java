@@ -55,7 +55,7 @@ public class ServerSocket implements Runnable {
 		do {
 			try {
 				java.net.ServerSocket server = new java.net.ServerSocket(
-						getServerPort().getPort());
+						getServerPort().getServerPort());
 				Logger.getLogger(getClass()).info(
 						"Ready to accept connections...");
 				do {

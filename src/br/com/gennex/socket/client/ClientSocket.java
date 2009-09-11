@@ -60,7 +60,7 @@ public class ClientSocket extends TimerTask implements Observer {
 
 		InetAddress addr = null;
 		try {
-			addr = InetAddress.getByName(getServerName().getName());
+			addr = InetAddress.getByName(getServerName().getServerName());
 		} catch (UnknownHostException e) {
 			Logger.getLogger(getClass()).error(
 					"Host nao encontrado! " + getServerName());
@@ -68,7 +68,7 @@ public class ClientSocket extends TimerTask implements Observer {
 		}
 
 		SocketAddress sockaddr = new InetSocketAddress(addr, getServerPort()
-				.getPort());
+				.getServerPort());
 
 		java.net.Socket rawSocket = new java.net.Socket();
 

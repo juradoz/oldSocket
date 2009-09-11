@@ -1,16 +1,18 @@
 package br.com.gennex.socket.model;
 
-public class ServerName {
-	private String name;
+import java.security.InvalidParameterException;
 
-	public String getName() {
-		return this.name;
+public class ServerName {
+	private String serverName;
+
+	public String getServerName() {
+		return this.serverName;
 	}
 
 	public ServerName(String name) {
 		if (name == null || name.length() <= 0)
-			throw new IllegalArgumentException();
-		this.name = name;
+			throw new InvalidParameterException();
+		this.serverName = name;
 	}
 
 	@Override
@@ -22,10 +24,10 @@ public class ServerName {
 		if (getClass() != obj.getClass())
 			return false;
 		ServerName other = (ServerName) obj;
-		if (name == null) {
-			if (other.name != null)
+		if (serverName == null) {
+			if (other.serverName != null)
 				return false;
-		} else if (!name.equals(other.name))
+		} else if (!serverName.equals(other.serverName))
 			return false;
 		return true;
 	}
