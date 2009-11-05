@@ -75,7 +75,9 @@ public class ClientSocket extends TimerTask implements Observer {
 		try {
 			rawSocket.connect(sockaddr);
 		} catch (IOException e) {
-			Logger.getLogger(getClass()).error(e.getMessage(), e);
+			Logger.getLogger(getClass()).error(
+					"Erro na conexao a " + getServerName() + ":"
+							+ getServerPort() + " " + e.getMessage(), e);
 			return;
 		}
 
