@@ -203,6 +203,11 @@ public abstract class Socket extends Observable implements Runnable,
 							.getInetAddress().getHostName()));
 			connected = false;
 			notifyDisconnection();
+			try {
+				this.rawSocket.close();
+			} catch (IOException e) {
+				Logger.getLogger(getClass()).error(e.getMessage(), e);
+			}
 		}
 	}
 
