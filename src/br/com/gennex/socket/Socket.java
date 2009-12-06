@@ -69,11 +69,11 @@ public abstract class Socket extends Observable implements Runnable,
 		rawSocket.close();
 	}
 
-	private synchronized TcpMessageFilter getInputFilter() {
+	private TcpMessageFilter getInputFilter() {
 		return inputFilter;
 	}
 
-	private synchronized TcpMessageFilter getOutputFilter() {
+	private TcpMessageFilter getOutputFilter() {
 		return outputFilter;
 	}
 
