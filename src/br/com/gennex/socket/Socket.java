@@ -66,7 +66,7 @@ public abstract class Socket extends Observable implements Runnable,
 	 * @throws IOException
 	 */
 	public void disconnect() throws IOException {
-		rawSocket.close();
+		this.rawSocket.close();
 	}
 
 	private TcpMessageFilter getInputFilter() {
@@ -204,7 +204,7 @@ public abstract class Socket extends Observable implements Runnable,
 			connected = false;
 			notifyDisconnection();
 			try {
-				this.rawSocket.close();
+				disconnect();
 			} catch (IOException e) {
 				Logger.getLogger(getClass()).error(e.getMessage(), e);
 			}
