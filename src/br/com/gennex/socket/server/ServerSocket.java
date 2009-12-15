@@ -1,6 +1,8 @@
 package br.com.gennex.socket.server;
 
 import java.security.InvalidParameterException;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.log4j.Logger;
 
@@ -19,7 +21,43 @@ public class ServerSocket implements Runnable {
 
 	private ServerPort serverPort;
 
-	private SocketFactory socketFactory;
+	private final SocketAccepter socketAccepter;
+
+	private class SocketAccepter implements Runnable {
+
+		private SocketAccepter(SocketFactory socketFactory) {
+			this.socketFactory = socketFactory;
+		}
+
+		private final SocketFactory socketFactory;
+
+		private BlockingQueue<java.net.Socket> sockets = new LinkedBlockingQueue<java.net.Socket>();
+
+		@Override
+		public void run() {
+			do {
+				java.net.Socket socket = null;
+				try {
+					socket = sockets.take();
+				} catch (InterruptedException e) {
+					Logger.getLogger(getClass()).error(e.getMessage(), e);
+				}
+
+				if (socket == null)
+					continue;
+
+				Socket threadSocket = socketFactory.createSocket(socket);
+				new Thread(threadSocket, "Client "
+						+ socket.getInetAddress().getHostName()).start();
+
+			} while (Thread.currentThread().isAlive());
+		}
+
+		public void addSocket(java.net.Socket socket) {
+			sockets.offer(socket);
+		}
+
+	}
 
 	/**
 	 * @param port
@@ -35,7 +73,12 @@ public class ServerSocket implements Runnable {
 		if (socketFactory == null)
 			throw new InvalidParameterException("invalid socketFactory");
 		this.serverPort = serverPort;
-		this.socketFactory = socketFactory;
+
+		this.socketAccepter = new SocketAccepter(socketFactory);
+
+		Thread t = new Thread(socketAccepter);
+		t.setDaemon(true);
+		t.start();
 	}
 
 	/**
@@ -60,9 +103,7 @@ public class ServerSocket implements Runnable {
 						"Ready to accept connections...");
 				do {
 					java.net.Socket socket = server.accept();
-					Socket threadSocket = socketFactory.createSocket(socket);
-					new Thread(threadSocket, "Client "
-							+ socket.getInetAddress().getHostName()).start();
+					this.socketAccepter.addSocket(socket);
 				} while (Thread.currentThread().isAlive());
 			} catch (Exception e) {
 				Logger.getLogger(getClass()).fatal(e.getMessage(), e);
