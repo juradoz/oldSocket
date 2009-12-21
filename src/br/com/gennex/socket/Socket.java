@@ -47,9 +47,10 @@ public abstract class Socket extends Observable implements Runnable,
 	public Socket(java.net.Socket socket) {
 		super();
 		this.rawSocket = socket;
-		Logger.getLogger(getClass()).info(
-				new StringBuffer("Connect from ").append(socket
-						.getInetAddress().getHostName()));
+		if (socket.getInetAddress() != null)
+			Logger.getLogger(getClass()).info(
+					new StringBuffer(String.format("Connect from %s", socket
+							.getInetAddress().getHostName())));
 		try {
 			bufferedreader = new BufferedReader(new InputStreamReader(
 					this.rawSocket.getInputStream()));
