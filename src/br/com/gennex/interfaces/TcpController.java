@@ -3,5 +3,5 @@ package br.com.gennex.interfaces;
 public interface TcpController {
 	void addHandler(TcpRequest request, TcpRequestHandler requestHandler);
 
-	TcpResponse processRequest(TcpRequest request);
+	TcpResponse processRequest(TcpRequestCommand request);
 }

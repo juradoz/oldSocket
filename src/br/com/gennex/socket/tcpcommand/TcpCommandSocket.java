@@ -5,6 +5,7 @@ import java.util.HashMap;
 import org.apache.log4j.Logger;
 
 import br.com.gennex.interfaces.TcpRequest;
+import br.com.gennex.interfaces.TcpRequestCommand;
 import br.com.gennex.interfaces.TcpRequestHandler;
 import br.com.gennex.interfaces.TcpResponse;
 import br.com.gennex.socket.tcpcommand.messages.requests.FppsRequestCommand;
@@ -18,9 +19,16 @@ public class TcpCommandSocket extends br.com.gennex.socket.Socket {
 		super(socket);
 	}
 
-	@Override
 	public void addHandler(TcpRequest request, TcpRequestHandler requestHandler) {
 		handlerList.put(request.toString(), requestHandler);
+	}
+
+	public TcpRequestHandler removeHandler(TcpRequest request) {
+		return handlerList.remove(request.toString());
+	}
+
+	public void clearHandlers() {
+		handlerList.clear();
 	}
 
 	private TcpResponse handleInvalidRequest(TcpRequest request,
@@ -42,8 +50,8 @@ public class TcpCommandSocket extends br.com.gennex.socket.Socket {
 	}
 
 	@Override
-	public TcpResponse processRequest(TcpRequest request) {
-		String strRequest = request.toString().toUpperCase();
+	public TcpResponse processRequest(TcpRequestCommand request) {
+		String strRequest = request.getCommand().toUpperCase();
 		if (!handlerList.containsKey(strRequest))
 			throw new UnsupportedOperationException();
 
@@ -65,7 +73,7 @@ public class TcpCommandSocket extends br.com.gennex.socket.Socket {
 	@Override
 	protected void processStringRequest(String s) throws Exception {
 		TcpResponse response = null;
-		TcpRequest request = new FppsRequestCommand(s);
+		TcpRequestCommand request = new FppsRequestCommand(s);
 		try {
 			response = processRequest(request);
 		} catch (UnsupportedOperationException e) {

@@ -4,6 +4,32 @@ import br.com.gennex.interfaces.TcpRequestCommand;
 
 public class HttpMessage implements TcpRequestCommand {
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((tcpMessage == null) ? 0 : tcpMessage.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		HttpMessage other = (HttpMessage) obj;
+		if (tcpMessage == null) {
+			if (other.tcpMessage != null)
+				return false;
+		} else if (!tcpMessage.equalsIgnoreCase(other.tcpMessage))
+			return false;
+		return true;
+	}
+
 	public static final String getCommand(String tcpMessage) {
 		int indice = tcpMessage.indexOf(" ");
 		if (indice > 0) {
@@ -27,7 +53,7 @@ public class HttpMessage implements TcpRequestCommand {
 	private String tcpMessage;
 
 	public HttpMessage(String tcpMessage) {
-		setTcpMessage(tcpMessage);
+		setTcpMessage(tcpMessage.toUpperCase());
 	}
 
 	@Override

@@ -1,9 +1,34 @@
 package br.com.gennex.socket.tcpcommand.messages;
 
 import br.com.gennex.interfaces.TcpRequestCommand;
-import br.com.gennex.socket.tcpcommand.messages.responses.FppsResponse;
 
 public abstract class FppsMessage implements TcpRequestCommand {
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((tcpMessage == null) ? 0 : tcpMessage.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		FppsMessage other = (FppsMessage) obj;
+		if (tcpMessage == null) {
+			if (other.tcpMessage != null)
+				return false;
+		} else if (!tcpMessage.equalsIgnoreCase(other.tcpMessage))
+			return false;
+		return true;
+	}
 
 	public static final String getCommand(String tcpMessage) {
 		if (tcpMessage.indexOf("(") > 0) {
@@ -15,10 +40,10 @@ public abstract class FppsMessage implements TcpRequestCommand {
 	}
 
 	public static final String[] getParameters(String tcpMessage) {
-		String[] s = "".split(";");
+		String[] s = new String[0];
 		int i = tcpMessage.indexOf("(");
 		int f = tcpMessage.indexOf(")");
-		if (i > 0 && f > 0) {
+		if (i > 0 && f > 0 && f - i > 1) {
 			String sub = tcpMessage.substring(i + 1, f);
 			s = sub.split(";");
 		}
@@ -28,15 +53,7 @@ public abstract class FppsMessage implements TcpRequestCommand {
 	private String tcpMessage;
 
 	public FppsMessage(String tcpMessage) {
-		setTcpMessage(tcpMessage);
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (!(obj instanceof FppsResponse))
-			return false;
-		return ((FppsResponse) obj).getTcpMessage().equalsIgnoreCase(
-				this.getTcpMessage());
+		setTcpMessage(tcpMessage.toUpperCase());
 	}
 
 	@Override
