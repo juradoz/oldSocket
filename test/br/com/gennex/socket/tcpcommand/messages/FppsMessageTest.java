@@ -1,4 +1,4 @@
-package br.com.gennex.test;
+package br.com.gennex.socket.tcpcommand.messages;
 
 import junit.framework.TestCase;
 

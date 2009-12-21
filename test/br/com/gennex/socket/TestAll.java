@@ -1,5 +1,10 @@
-package br.com.gennex.test;
+package br.com.gennex.socket;
 
+import br.com.gennex.socket.model.ServerNameTest;
+import br.com.gennex.socket.model.ServerPortTest;
+import br.com.gennex.socket.tcpcommand.FppsTcpCommandSocketTest;
+import br.com.gennex.socket.tcpcommand.HttpTcpCommandSocketTest;
+import br.com.gennex.socket.tcpcommand.messages.FppsMessageTest;
 import junit.framework.Test;
 
 public class TestAll {
