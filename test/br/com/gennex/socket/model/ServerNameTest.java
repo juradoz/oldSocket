@@ -1,14 +1,16 @@
 package br.com.gennex.socket.model;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
 import java.security.InvalidParameterException;
 
-import junit.framework.TestCase;
-
+import org.junit.Before;
 import org.junit.Test;
 
-import br.com.gennex.socket.model.ServerName;
-
-public class ServerNameTest extends TestCase {
+public class ServerNameTest {
 
 	private final String nullName = "";
 	private final String name = "TESTE";
@@ -16,9 +18,10 @@ public class ServerNameTest extends TestCase {
 
 	private ServerName serverName;
 
-	@Override
-	protected void setUp() throws Exception {
+	@Before
+	public void setUp() throws Exception {
 		serverName = new ServerName(name);
+		assertNotNull(serverName);
 	}
 
 	@Test
@@ -31,14 +34,10 @@ public class ServerNameTest extends TestCase {
 		assertEquals(name, serverName.getServerName());
 	}
 
-	@Test
+	@Test(expected = InvalidParameterException.class)
 	public void testServerName() {
-		assertNotNull(serverName);
-		try {
-			serverName = new ServerName(nullName);
-		} catch (Exception e) {
-			assertTrue(e instanceof InvalidParameterException);
-		}
+		serverName = new ServerName(nullName);
+		fail();
 	}
 
 	@Test

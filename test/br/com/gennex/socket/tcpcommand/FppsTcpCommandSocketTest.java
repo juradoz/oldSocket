@@ -1,18 +1,21 @@
 package br.com.gennex.socket.tcpcommand;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.fail;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import br.com.gennex.interfaces.TcpRequest;
 import br.com.gennex.interfaces.TcpRequestHandler;
 import br.com.gennex.interfaces.TcpResponse;
 import br.com.gennex.socket.Socket;
-import br.com.gennex.socket.tcpcommand.TcpCommandSocket;
 import br.com.gennex.socket.tcpcommand.messages.requests.FppsRequest;
 import br.com.gennex.socket.tcpcommand.messages.responses.FppsResponse;
 
-public class FppsTcpCommandSocketTest extends TestCase {
+public class FppsTcpCommandSocketTest {
 	private static final String ParamsVazio = "";
 	private static final String Param1 = "param1";
 	private static final String Param2 = "param1;param2";
@@ -35,9 +38,10 @@ public class FppsTcpCommandSocketTest extends TestCase {
 	private static final String response = "OK";
 	private TcpCommandSocket tcpCommandSocket;
 
-	@Override
-	protected void setUp() throws Exception {
+	@Before
+	public void setUp() {
 		tcpCommandSocket = new TcpCommandSocket(new java.net.Socket());
+		assertNotNull(tcpCommandSocket);
 		tcpCommandSocket.addHandler(new FppsRequest(Command),
 				new TcpRequestHandler() {
 

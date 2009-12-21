@@ -1,6 +1,9 @@
 package br.com.gennex.socket.tcpcommand;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.fail;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -9,11 +12,10 @@ import br.com.gennex.interfaces.TcpRequest;
 import br.com.gennex.interfaces.TcpRequestHandler;
 import br.com.gennex.interfaces.TcpResponse;
 import br.com.gennex.socket.Socket;
-import br.com.gennex.socket.tcpcommand.TcpCommandSocket;
 import br.com.gennex.socket.tcpcommand.messages.requests.HttpRequestCommand;
 import br.com.gennex.socket.tcpcommand.messages.responses.HttpResponse;
 
-public class HttpTcpCommandSocketTest extends TestCase {
+public class HttpTcpCommandSocketTest {
 
 	private static final String ParamsVazio = "";
 	private static final String Param1 = "param1";
@@ -37,8 +39,9 @@ public class HttpTcpCommandSocketTest extends TestCase {
 	private TcpCommandSocket tcpCommandSocket;
 
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() {
 		tcpCommandSocket = new TcpCommandSocket(new java.net.Socket());
+		assertNotNull(tcpCommandSocket);
 		tcpCommandSocket.addHandler(new HttpRequestCommand(Command),
 				new TcpRequestHandler() {
 
@@ -89,5 +92,4 @@ public class HttpTcpCommandSocketTest extends TestCase {
 			fail(e.getClass().getSimpleName() + ":" + e.getMessage());
 		}
 	}
-
 }

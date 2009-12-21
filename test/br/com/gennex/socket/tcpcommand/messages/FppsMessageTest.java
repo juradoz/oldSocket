@@ -1,13 +1,13 @@
 package br.com.gennex.socket.tcpcommand.messages;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import org.junit.Test;
 
-import br.com.gennex.socket.tcpcommand.messages.FppsMessage;
 import br.com.gennex.socket.tcpcommand.messages.requests.FppsRequest;
 
-public class FppsMessageTest extends TestCase {
+public class FppsMessageTest {
 
 	private static final String ParamsVazio = "";
 	private static final String Param1 = "param1".toUpperCase();
@@ -155,8 +155,8 @@ public class FppsMessageTest extends TestCase {
 
 	@Test
 	public void testToString() {
-//		message = new FppsRequest(ReqSemParams);
-//		assertEquals(ReqSemParams, message.toString());
+		// message = new FppsRequest(ReqSemParams);
+		// assertEquals(ReqSemParams, message.toString());
 		message = new FppsRequest(ReqSem1Param);
 		assertEquals(ReqSem1Param, message.toString());
 		message = new FppsRequest(ReqSem2Param);

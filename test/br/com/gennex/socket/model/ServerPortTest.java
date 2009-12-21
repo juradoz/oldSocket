@@ -1,28 +1,26 @@
 package br.com.gennex.socket.model;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
 import java.security.InvalidParameterException;
 
-import junit.framework.TestCase;
-
+import org.junit.Before;
 import org.junit.Test;
 
-import br.com.gennex.socket.model.ServerPort;
-
-public class ServerPortTest extends TestCase {
+public class ServerPortTest {
 	private static final int nullPort = 0;
 	private static final int port = 22000;
 	private static final int port2 = 22001;
 
 	private ServerPort serverPort;
 
-	@Test
+	@Test(expected = InvalidParameterException.class)
 	public void testServerPort() {
-		assertNotNull(serverPort);
-		try {
-			serverPort = new ServerPort(nullPort);
-		} catch (Exception e) {
-			assertTrue(e instanceof InvalidParameterException);
-		}
+		serverPort = new ServerPort(nullPort);
+		fail();
 	}
 
 	@Test
@@ -35,9 +33,10 @@ public class ServerPortTest extends TestCase {
 		assertEquals(String.valueOf(port), serverPort.toString());
 	}
 
-	@Override
-	protected void setUp() throws Exception {
+	@Before
+	public void setUp() throws Exception {
 		serverPort = new ServerPort(port);
+		assertNotNull(serverPort);
 	}
 
 	@Test
