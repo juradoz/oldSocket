@@ -1,6 +1,6 @@
 package br.com.gennex.socket.util;
 
-public class HttpUtil {
+public class HttpUtil extends Util{
 	public static final String DelimitadorParametros = " ";
 	public static final String ParamsVazio = "";
 	public static final String Param1 = "param1".toUpperCase();

@@ -18,7 +18,7 @@ import br.com.gennex.socket.tcpcommand.messages.responses.FppsResponse;
 import br.com.gennex.socket.util.FppsUtil;
 
 public class FppsTcpCommandSocketTest {
-	private static final String response = "OK";
+
 	private TcpCommandSocket tcpCommandSocket;
 
 	@Before
@@ -35,7 +35,7 @@ public class FppsTcpCommandSocketTest {
 								.getParameters().length; i++)
 							assertNotNull(((FppsRequest) request)
 									.getParameters()[i]);
-						return new FppsResponse(response);
+						return new FppsResponse(FppsUtil.response);
 					}
 				});
 	}
@@ -60,22 +60,22 @@ public class FppsTcpCommandSocketTest {
 	@Test
 	public void testProcessRequest() {
 		try {
-			assertEquals(new FppsResponse(response), tcpCommandSocket
+			assertEquals(new FppsResponse(FppsUtil.response), tcpCommandSocket
 					.processRequest(new FppsRequestCommand(
 							FppsUtil.ReqSemParams)));
-			assertEquals(new FppsResponse(response), tcpCommandSocket
+			assertEquals(new FppsResponse(FppsUtil.response), tcpCommandSocket
 					.processRequest(new FppsRequestCommand(
 							FppsUtil.ReqSem1Param)));
-			assertEquals(new FppsResponse(response), tcpCommandSocket
+			assertEquals(new FppsResponse(FppsUtil.response), tcpCommandSocket
 					.processRequest(new FppsRequestCommand(
 							FppsUtil.ReqSem2Param)));
-			assertEquals(new FppsResponse(response), tcpCommandSocket
+			assertEquals(new FppsResponse(FppsUtil.response), tcpCommandSocket
 					.processRequest(new FppsRequestCommand(
 							FppsUtil.ReqSem3Param)));
-			assertEquals(new FppsResponse(response), tcpCommandSocket
+			assertEquals(new FppsResponse(FppsUtil.response), tcpCommandSocket
 					.processRequest(new FppsRequestCommand(
 							FppsUtil.ReqSem3UltimoVazio)));
-			assertEquals(new FppsResponse(response), tcpCommandSocket
+			assertEquals(new FppsResponse(FppsUtil.response), tcpCommandSocket
 					.processRequest(new FppsRequestCommand(
 							FppsUtil.ReqSem5Vazio)));
 		} catch (Exception e) {

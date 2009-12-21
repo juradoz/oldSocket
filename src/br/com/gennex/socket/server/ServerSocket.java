@@ -1,6 +1,11 @@
 package br.com.gennex.socket.server;
 
+import java.io.IOException;
 import java.security.InvalidParameterException;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -8,6 +13,7 @@ import org.apache.log4j.Logger;
 
 import br.com.gennex.interfaces.SocketFactory;
 import br.com.gennex.socket.Socket;
+import br.com.gennex.socket.Socket.EventDisconnected;
 import br.com.gennex.socket.model.ServerPort;
 
 /**
@@ -17,19 +23,32 @@ import br.com.gennex.socket.model.ServerPort;
  * @author Daniel Jurado
  * 
  */
-public class ServerSocket implements Runnable {
+public class ServerSocket implements Runnable, Observer {
 
 	private ServerPort serverPort;
 
 	private final SocketAccepter socketAccepter;
 
+	private HashSet<Socket> socketsAtivos = new HashSet<Socket>();
+
+	@Override
+	public void update(Observable socket, Object evento) {
+		if (!(evento instanceof EventDisconnected))
+			return;
+		synchronized (socketsAtivos) {
+			socketsAtivos.remove(socket);
+		}
+	}
+
 	private class SocketAccepter implements Runnable {
 
-		private SocketAccepter(SocketFactory socketFactory) {
+		private final ServerSocket parent;
+		private final SocketFactory socketFactory;
+
+		private SocketAccepter(ServerSocket parent, SocketFactory socketFactory) {
+			this.parent = parent;
 			this.socketFactory = socketFactory;
 		}
-
-		private final SocketFactory socketFactory;
 
 		private BlockingQueue<java.net.Socket> sockets = new LinkedBlockingQueue<java.net.Socket>();
 
@@ -47,6 +66,10 @@ public class ServerSocket implements Runnable {
 					continue;
 
 				Socket threadSocket = socketFactory.createSocket(socket);
+				synchronized (socketsAtivos) {
+					socketsAtivos.add(threadSocket);
+				}
+				threadSocket.addObserver(parent);
 				new Thread(threadSocket, "Client "
 						+ socket.getInetAddress().getHostName()).start();
 
@@ -56,7 +79,6 @@ public class ServerSocket implements Runnable {
 		public void addSocket(java.net.Socket socket) {
 			sockets.offer(socket);
 		}
-
 	}
 
 	/**
@@ -67,6 +89,20 @@ public class ServerSocket implements Runnable {
 	 *            comportamentos esperados.
 	 */
 	public ServerSocket(ServerPort serverPort, SocketFactory socketFactory) {
+		this(serverPort, socketFactory, false);
+	}
+
+	/**
+	 * @param port
+	 *            a porta que o servidor deverá aceitar novas conexões.
+	 * @param socketFactory
+	 *            a factory que deve criar os sockets de acordo com os
+	 *            comportamentos esperados.
+	 * @param isDaemon
+	 *            torna a thread do socket como daemon.
+	 */
+	public ServerSocket(ServerPort serverPort, SocketFactory socketFactory,
+			boolean isDaemon) {
 		super();
 		if (serverPort == null)
 			throw new InvalidParameterException("invalid port");
@@ -74,10 +110,14 @@ public class ServerSocket implements Runnable {
 			throw new InvalidParameterException("invalid socketFactory");
 		this.serverPort = serverPort;
 
-		this.socketAccepter = new SocketAccepter(socketFactory);
+		this.socketAccepter = new SocketAccepter(this, socketFactory);
 
 		Thread t = new Thread(socketAccepter);
 		t.setDaemon(true);
+		t.start();
+
+		t = new Thread(this);
+		t.setDaemon(isDaemon);
 		t.start();
 	}
 
@@ -88,6 +128,8 @@ public class ServerSocket implements Runnable {
 		return serverPort;
 	}
 
+	private java.net.ServerSocket server;
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -97,8 +139,8 @@ public class ServerSocket implements Runnable {
 	public final void run() {
 		do {
 			try {
-				java.net.ServerSocket server = new java.net.ServerSocket(
-						getServerPort().getServerPort());
+				server = new java.net.ServerSocket(getServerPort()
+						.getServerPort());
 				Logger.getLogger(getClass()).info(
 						"Ready to accept connections...");
 				do {
@@ -113,8 +155,25 @@ public class ServerSocket implements Runnable {
 					Logger.getLogger(getClass()).error(f.getMessage(), f);
 				}
 			}
-		} while (Thread.currentThread().isAlive());
-
+		} while (Thread.currentThread().isAlive() && ativo);
 	}
 
+	private boolean ativo = true;
+
+	public void close() throws IOException {
+		synchronized (socketsAtivos) {
+			Iterator<Socket> it = socketsAtivos.iterator();
+			while (it.hasNext()) {
+				Socket socket = it.next();
+				try {
+					socket.disconnect();
+				} catch (IOException e) {
+					Logger.getLogger(getClass()).error(e.getMessage(), e);
+				}
+				it.remove();
+			}
+		}
+		this.ativo = false;
+		this.server.close();
+	}
 }

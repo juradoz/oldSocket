@@ -14,6 +14,7 @@ import br.com.gennex.interfaces.TcpResponse;
 import br.com.gennex.socket.Socket;
 import br.com.gennex.socket.tcpcommand.messages.requests.HttpRequestCommand;
 import br.com.gennex.socket.tcpcommand.messages.responses.HttpResponse;
+import br.com.gennex.socket.util.HttpUtil;
 
 public class HttpTcpCommandSocketTest {
 
@@ -35,7 +36,6 @@ public class HttpTcpCommandSocketTest {
 			+ Param3UltimoVazio;
 	private static final String ReqSem5Vazio = Command + " " + Param5Vazio;
 
-	private static final String response = "OK";
 	private TcpCommandSocket tcpCommandSocket;
 
 	@Before
@@ -52,7 +52,7 @@ public class HttpTcpCommandSocketTest {
 								.getParameters().length; i++)
 							assertNotNull(((HttpRequestCommand) request)
 									.getParameters()[i]);
-						return new HttpResponse(response);
+						return new HttpResponse(HttpUtil.response);
 					}
 				});
 	}
@@ -76,17 +76,17 @@ public class HttpTcpCommandSocketTest {
 	@Test
 	public void testProcessRequest() {
 		try {
-			assertEquals(new HttpResponse(response), tcpCommandSocket
+			assertEquals(new HttpResponse(HttpUtil.response), tcpCommandSocket
 					.processRequest(new HttpRequestCommand(ReqSemParams)));
-			assertEquals(new HttpResponse(response), tcpCommandSocket
+			assertEquals(new HttpResponse(HttpUtil.response), tcpCommandSocket
 					.processRequest(new HttpRequestCommand(ReqSem1Param)));
-			assertEquals(new HttpResponse(response), tcpCommandSocket
+			assertEquals(new HttpResponse(HttpUtil.response), tcpCommandSocket
 					.processRequest(new HttpRequestCommand(ReqSem2Param)));
-			assertEquals(new HttpResponse(response), tcpCommandSocket
+			assertEquals(new HttpResponse(HttpUtil.response), tcpCommandSocket
 					.processRequest(new HttpRequestCommand(ReqSem3Param)));
-			assertEquals(new HttpResponse(response), tcpCommandSocket
+			assertEquals(new HttpResponse(HttpUtil.response), tcpCommandSocket
 					.processRequest(new HttpRequestCommand(ReqSem3UltimoVazio)));
-			assertEquals(new HttpResponse(response), tcpCommandSocket
+			assertEquals(new HttpResponse(HttpUtil.response), tcpCommandSocket
 					.processRequest(new HttpRequestCommand(ReqSem5Vazio)));
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -44,10 +44,18 @@ public class ClientSocket extends TimerTask implements Observer {
 
 	public ClientSocket(ServerName host, ServerPort port,
 			SocketFactory socketFactory) {
+		this(host, port, socketFactory, false);
+	}
+
+	public ClientSocket(ServerName host, ServerPort port,
+			SocketFactory socketFactory, boolean isDaemon) {
 		super();
 		this.serverName = host;
 		this.serverPort = port;
 		this.socketFactory = socketFactory;
+		Thread t = new Thread(this, getClass().getSimpleName());
+		t.setDaemon(isDaemon);
+		t.start();
 	}
 
 	private void checkConnection() {
@@ -114,9 +122,7 @@ public class ClientSocket extends TimerTask implements Observer {
 		return reconnectInterval;
 	}
 
-	public Socket getSocket() throws SocketNaoConectado {
-		if (socket == null)
-			throw new SocketNaoConectado("not connected");
+	public Socket getSocket() {
 		return socket;
 	}
 
@@ -207,6 +213,10 @@ public class ClientSocket extends TimerTask implements Observer {
 		if (!(arg instanceof Socket.EventDisconnected))
 			return;
 		setSocket(null);
+	}
+
+	public boolean isConnected() {
+		return getSocket() != null && getSocket().isConnected();
 	}
 
 }
