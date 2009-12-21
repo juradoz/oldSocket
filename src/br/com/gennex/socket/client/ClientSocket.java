@@ -96,9 +96,10 @@ public class ClientSocket extends TimerTask implements Observer {
 	}
 
 	public void disconnect() throws IOException {
-		this.serverName = null;
-		this.serverPort = null;
+		if (this.socket == null)
+			return;
 		this.socket.disconnect();
+		this.socket = null;
 	}
 
 	/**

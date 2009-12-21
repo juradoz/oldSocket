@@ -1,10 +1,13 @@
 package br.com.gennex.socket;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.net.Socket;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -25,6 +28,7 @@ import br.com.gennex.socket.tcpcommand.messages.requests.FppsRequest;
 import br.com.gennex.socket.tcpcommand.messages.requests.FppsRequestCommand;
 import br.com.gennex.socket.tcpcommand.messages.responses.FppsResponse;
 import br.com.gennex.socket.util.FppsUtil;
+import br.com.gennex.socket.util.MockServerSocket;
 
 public class SocketTest {
 
@@ -40,27 +44,45 @@ public class SocketTest {
 				new SocketFactory() {
 
 					@Override
-					public Socket createSocket(java.net.Socket socket) {
-						TcpCommandSocket tcpCommandSocket = new TcpCommandSocket(
-								socket) {
-
-						};
-						tcpCommandSocket.addHandler(new FppsRequestCommand(
-								FppsUtil.Command), new TcpRequestHandler() {
-
-							@Override
-							public TcpResponse process(Socket socket,
-									TcpRequest request) throws Exception {
-								for (int i = 0; i < ((FppsRequest) request)
-										.getParameters().length; i++)
-									assertNotNull(((FppsRequest) request)
-											.getParameters()[i]);
-								return new FppsResponse(FppsUtil.response);
-							}
-						});
-						return tcpCommandSocket;
+					public br.com.gennex.socket.Socket createSocket(
+							Socket socket) {
+						return new MockServerSocket(socket);
 					}
 				});
+
+	}
+
+	private class MockClientSocket extends TcpCommandSocket {
+
+		public MockClientSocket(Socket socket) {
+			super(socket);
+			addHandler(new FppsRequestCommand(FppsUtil.response),
+					new TcpRequestHandler() {
+
+						@Override
+						public TcpResponse process(
+								br.com.gennex.socket.Socket socket,
+								TcpRequest request) throws Exception {
+							for (int i = 0; i < ((FppsRequest) request)
+									.getParameters().length; i++)
+								assertNotNull(((FppsRequest) request)
+										.getParameters()[i]);
+							setRecebido(true);
+							return new FppsResponse(FppsUtil.response);
+						}
+					});
+		}
+
+		private boolean recebido = false;
+
+		public boolean isRecebido() {
+			return recebido;
+		}
+
+		public void setRecebido(boolean recebido) {
+			this.recebido = recebido;
+		}
+
 	}
 
 	@Before
@@ -69,25 +91,9 @@ public class SocketTest {
 				new ServerPort(port), new SocketFactory() {
 
 					@Override
-					public Socket createSocket(java.net.Socket socket) {
-						TcpCommandSocket tcpCommandSocket = new TcpCommandSocket(
-								socket) {
-
-						};
-						tcpCommandSocket.addHandler(new FppsRequestCommand(
-								FppsUtil.response), new TcpRequestHandler() {
-
-							@Override
-							public TcpResponse process(Socket socket,
-									TcpRequest request) throws Exception {
-								for (int i = 0; i < ((FppsRequest) request)
-										.getParameters().length; i++)
-									assertNotNull(((FppsRequest) request)
-											.getParameters()[i]);
-								return new FppsResponse(FppsUtil.response);
-							}
-						});
-						return tcpCommandSocket;
+					public br.com.gennex.socket.Socket createSocket(
+							Socket socket) {
+						return new MockClientSocket(socket);
 					}
 				});
 
@@ -95,31 +101,54 @@ public class SocketTest {
 
 	@Test(timeout = 10000)
 	public void testConnect() {
-		while (true)
+		while (true) {
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e1) {
+				fail(e1.getMessage());
+			}
 			if (clientSocket.isConnected()) {
+				assertTrue("Total: " + serverSocket.getTotalConnections(),
+						serverSocket.getTotalConnections() == 1);
 				assertTrue(true);
 				return;
 			}
+		}
 	}
 
 	@Test(timeout = 10000)
 	public void testDisconnect() {
-		while (true)
+		while (true) {
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e1) {
+				fail(e1.getMessage());
+			}
 			if (clientSocket.isConnected()) {
+				assertTrue("Total: " + serverSocket.getTotalConnections(),
+						serverSocket.getTotalConnections() == 1);
 				try {
 					clientSocket.disconnect();
-					assertTrue(true);
+					try {
+						Thread.sleep(500);
+					} catch (InterruptedException e1) {
+						fail(e1.getMessage());
+					}
+					assertTrue("Total: " + serverSocket.getTotalConnections(),
+							serverSocket.getTotalConnections() == 0);
 					return;
 				} catch (IOException e) {
 					fail(e.getMessage());
 				}
 			}
+		}
 	}
 
 	@After
-	public void teadDown() {
+	public void teardDown() {
 		try {
 			clientSocket.disconnect();
+			assertFalse(clientSocket.isConnected());
 		} catch (IOException e) {
 			fail(e.getMessage());
 		}
@@ -129,8 +158,29 @@ public class SocketTest {
 	public static void classTearDown() {
 		try {
 			serverSocket.close();
+			assertEquals(0, serverSocket.getTotalConnections());
 		} catch (IOException e) {
 			fail(e.getMessage());
 		}
+	}
+
+	@Test(timeout = 10000)
+	public void testRequest() {
+		FppsRequest request = new FppsRequestCommand(FppsUtil.Command);
+		while (!clientSocket.isConnected())
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				fail(e.getMessage());
+			}
+		clientSocket.getSocket().send(request);
+		while (!((MockClientSocket) clientSocket.getSocket()).isRecebido()) {
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				fail(e.getMessage());
+			}
+		}
+		assertTrue(true);
 	}
 }

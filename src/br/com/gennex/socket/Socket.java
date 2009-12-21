@@ -68,6 +68,7 @@ public abstract class Socket extends Observable implements Runnable,
 	 */
 	public void disconnect() throws IOException {
 		this.rawSocket.close();
+		this.connected = false;
 	}
 
 	private TcpMessageFilter getInputFilter() {
@@ -105,11 +106,12 @@ public abstract class Socket extends Observable implements Runnable,
 	 * @param message
 	 *            the message to log
 	 */
-	private void logMessage(TcpMessageFilter filter, String message) {
-		if (filter != null && filter.accept(message))
-			Logger.getLogger(getClass()).info(message);
-		else if (Logger.getLogger(getClass()).isDebugEnabled())
-			Logger.getLogger(getClass()).debug(message);
+	void logMessage(TcpMessageFilter filter, String message) {
+		if (filter != null
+				&& (!filter.accept(message) && !Logger.getLogger(getClass())
+						.isDebugEnabled()))
+			return;
+		Logger.getLogger(getClass()).info(message);
 	}
 
 	/**
@@ -118,7 +120,7 @@ public abstract class Socket extends Observable implements Runnable,
 	 * @param message
 	 *            the received message
 	 */
-	private void logReceived(String message) {
+	void logReceived(String message) {
 		logMessage(getInputFilter(), new StringBuffer("Received: ").append(
 				message).toString());
 	}
@@ -129,7 +131,7 @@ public abstract class Socket extends Observable implements Runnable,
 	 * @param message
 	 *            the sent message
 	 */
-	private void logSent(String message) {
+	void logSent(String message) {
 		logMessage(getOutputFilter(), new StringBuffer("Sent: ")
 				.append(message).toString());
 	}
@@ -202,10 +204,9 @@ public abstract class Socket extends Observable implements Runnable,
 			Logger.getLogger(getClass()).info(
 					new StringBuffer("Disconnect from ").append(rawSocket
 							.getInetAddress().getHostName()));
-			connected = false;
-			notifyDisconnection();
 			try {
 				disconnect();
+				notifyDisconnection();
 			} catch (IOException e) {
 				Logger.getLogger(getClass()).error(e.getMessage(), e);
 			}

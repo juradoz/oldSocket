@@ -176,4 +176,10 @@ public class ServerSocket implements Runnable, Observer {
 		this.ativo = false;
 		this.server.close();
 	}
+
+	public int getTotalConnections() {
+		synchronized (socketsAtivos) {
+			return socketsAtivos.size();
+		}
+	}
 }
