@@ -89,6 +89,7 @@ public class HttpTcpCommandSocketTest {
 			assertEquals(new HttpResponse(response), tcpCommandSocket
 					.processRequest(new HttpRequestCommand(ReqSem5Vazio)));
 		} catch (Exception e) {
+			e.printStackTrace();
 			fail(e.getClass().getSimpleName() + ":" + e.getMessage());
 		}
 	}

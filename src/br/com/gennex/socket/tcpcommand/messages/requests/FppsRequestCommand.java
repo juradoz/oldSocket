@@ -11,15 +11,10 @@ public class FppsRequestCommand extends FppsRequest implements
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof FppsRequest)
+		if (!(obj instanceof FppsRequestCommand))
 			return false;
 
 		return ((FppsRequest) obj).getCommand().equalsIgnoreCase(getCommand());
-	}
-
-	@Override
-	public String toString() {
-		return getCommand();
 	}
 
 }

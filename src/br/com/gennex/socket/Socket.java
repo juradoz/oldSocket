@@ -18,11 +18,11 @@ import br.com.gennex.socket.tcpcommand.messages.responses.FppsResponse;
 public abstract class Socket extends Observable implements Runnable,
 		TcpController {
 
-	public class EventConnected {
+	public final class EventConnected {
 
 	}
 
-	public class EventDisconnected {
+	public final class EventDisconnected {
 
 	}
 

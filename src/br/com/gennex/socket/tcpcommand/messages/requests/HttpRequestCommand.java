@@ -11,15 +11,9 @@ public class HttpRequestCommand extends HttpRequest implements
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof HttpRequest)
+		if (!(obj instanceof HttpRequestCommand))
 			return false;
 
 		return ((HttpRequest) obj).getCommand().equalsIgnoreCase(getCommand());
 	}
-
-	@Override
-	public String toString() {
-		return getCommand();
-	}
-
 }
