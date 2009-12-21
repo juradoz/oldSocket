@@ -8,6 +8,7 @@ import java.net.UnknownHostException;
 import java.security.InvalidParameterException;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Timer;
 import java.util.TimerTask;
 
 import org.apache.log4j.Logger;
@@ -40,26 +41,33 @@ public class ClientSocket extends TimerTask implements Observer {
 	private ServerPort serverPort;
 	private SocketFactory socketFactory;
 
-	private int reconnectInterval = 10000;
+	private static final int DEFAULT_RECONNECT_INTERVAL = (int) (1 + Math
+			.random() * 10000);
+
+	private int reconnectInterval = DEFAULT_RECONNECT_INTERVAL;
 
 	public ClientSocket(ServerName host, ServerPort port,
 			SocketFactory socketFactory) {
-		this(host, port, socketFactory, false);
+		this(host, port, socketFactory, DEFAULT_RECONNECT_INTERVAL, false);
 	}
 
 	public ClientSocket(ServerName host, ServerPort port,
-			SocketFactory socketFactory, boolean isDaemon) {
+			SocketFactory socketFactory, int reconnectInterval, boolean isDaemon) {
 		super();
 		this.serverName = host;
 		this.serverPort = port;
 		this.socketFactory = socketFactory;
-		Thread t = new Thread(this, getClass().getSimpleName());
-		t.setDaemon(isDaemon);
-		t.start();
+		new Timer(getClass().getSimpleName(), isDaemon).schedule(this, 0,
+				reconnectInterval);
+	}
+
+	public ClientSocket(ServerName host, ServerPort port,
+			SocketFactory socketFactory, int reconnectInterval) {
+		this(host, port, socketFactory, reconnectInterval, false);
 	}
 
 	private void checkConnection() {
-		if (socket != null)
+		if (isConnected())
 			return;
 
 		if (getServerName() == null || getServerPort() == null) {
@@ -81,7 +89,12 @@ public class ClientSocket extends TimerTask implements Observer {
 		java.net.Socket rawSocket = new java.net.Socket();
 
 		try {
+			Logger.getLogger(getClass()).info(
+					"Conectando a " + getServerName() + ":" + getServerPort()
+							+ "...");
 			rawSocket.connect(sockaddr);
+			Logger.getLogger(getClass()).info(
+					"Conectado a " + getServerName() + ":" + getServerPort());
 		} catch (IOException e) {
 			Logger.getLogger(getClass()).error(
 					"Erro na conexao a " + getServerName() + ":"
@@ -90,16 +103,16 @@ public class ClientSocket extends TimerTask implements Observer {
 		}
 
 		setSocket(socketFactory.createSocket(rawSocket));
-		socket.addObserver(this);
-		new Thread(socket, "Server " + rawSocket.getInetAddress().getHostName())
-				.start();
+		getSocket().addObserver(this);
+		new Thread(getSocket(), "Server "
+				+ rawSocket.getInetAddress().getHostName()).start();
 	}
 
 	public void disconnect() throws IOException {
-		if (this.socket == null)
+		if (getSocket() == null)
 			return;
 		this.socket.disconnect();
-		this.socket = null;
+		setSocket(null);
 	}
 
 	/**
@@ -156,9 +169,9 @@ public class ClientSocket extends TimerTask implements Observer {
 			throw new InvalidParameterException("invalid host.");
 		if (getServerName().equals(host))
 			return;
-		if (socket != null && socket.isConnected())
+		if (getSocket() != null && getSocket().isConnected())
 			try {
-				socket.disconnect();
+				getSocket().disconnect();
 			} catch (IOException e) {
 				Logger.getLogger(getClass()).error(e.getMessage(), e);
 			}
@@ -176,7 +189,7 @@ public class ClientSocket extends TimerTask implements Observer {
 			throw new InvalidParameterException("invalid port");
 		if (getServerPort().equals(port))
 			return;
-		if (socket != null && socket.isConnected())
+		if (getSocket() != null && getSocket().isConnected())
 			try {
 				socket.disconnect();
 			} catch (IOException e) {

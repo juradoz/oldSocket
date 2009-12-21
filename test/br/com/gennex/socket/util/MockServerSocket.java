@@ -14,6 +14,8 @@ import br.com.gennex.socket.tcpcommand.messages.responses.FppsResponse;
 
 public class MockServerSocket extends TcpCommandSocket {
 
+	private boolean recebido = false;
+
 	public MockServerSocket(Socket socket) {
 		super(socket);
 		addHandler(new FppsRequestCommand(FppsUtil.Command),
@@ -27,8 +29,17 @@ public class MockServerSocket extends TcpCommandSocket {
 								.getParameters().length; i++)
 							assertNotNull(((FppsRequest) request)
 									.getParameters()[i]);
+						setRecebido(true);
 						return new FppsResponse(FppsUtil.response);
 					}
 				});
+	}
+
+	private void setRecebido(boolean recebido) {
+		this.recebido = recebido;
+	}
+
+	public boolean isRecebido() {
+		return recebido;
 	}
 }

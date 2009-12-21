@@ -32,8 +32,6 @@ public abstract class Socket extends Observable implements Runnable,
 
 	protected java.net.Socket rawSocket;
 
-	private boolean connected = true;
-
 	private BufferedReader bufferedreader;
 	private PrintWriter printwriter;
 
@@ -46,6 +44,8 @@ public abstract class Socket extends Observable implements Runnable,
 	 */
 	public Socket(java.net.Socket socket) {
 		super();
+		if (!socket.isConnected())
+			return;
 		this.rawSocket = socket;
 		if (socket.getInetAddress() != null)
 			Logger.getLogger(getClass()).info(
@@ -68,7 +68,6 @@ public abstract class Socket extends Observable implements Runnable,
 	 */
 	public void disconnect() throws IOException {
 		this.rawSocket.close();
-		this.connected = false;
 	}
 
 	private TcpMessageFilter getInputFilter() {
@@ -95,7 +94,12 @@ public abstract class Socket extends Observable implements Runnable,
 	 * @return true se conectado, false caso desconectado.
 	 */
 	public boolean isConnected() {
-		return connected;
+		return this.rawSocket != null && this.rawSocket.isConnected();
+	}
+
+	boolean canLog(TcpMessageFilter filter, String message) {
+		return filter == null || filter.accept(message)
+				|| Logger.getLogger(getClass()).isDebugEnabled();
 	}
 
 	/**
@@ -106,10 +110,8 @@ public abstract class Socket extends Observable implements Runnable,
 	 * @param message
 	 *            the message to log
 	 */
-	void logMessage(TcpMessageFilter filter, String message) {
-		if (filter != null
-				&& (!filter.accept(message) && !Logger.getLogger(getClass())
-						.isDebugEnabled()))
+	private void logMessage(TcpMessageFilter filter, String message) {
+		if (!canLog(filter, message))
 			return;
 		Logger.getLogger(getClass()).info(message);
 	}
@@ -120,7 +122,7 @@ public abstract class Socket extends Observable implements Runnable,
 	 * @param message
 	 *            the received message
 	 */
-	void logReceived(String message) {
+	private void logReceived(String message) {
 		logMessage(getInputFilter(), new StringBuffer("Received: ").append(
 				message).toString());
 	}
@@ -131,7 +133,7 @@ public abstract class Socket extends Observable implements Runnable,
 	 * @param message
 	 *            the sent message
 	 */
-	void logSent(String message) {
+	private void logSent(String message) {
 		logMessage(getOutputFilter(), new StringBuffer("Sent: ")
 				.append(message).toString());
 	}

@@ -3,12 +3,16 @@ package br.com.gennex.socket;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Iterator;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -19,6 +23,7 @@ import br.com.gennex.interfaces.SocketFactory;
 import br.com.gennex.interfaces.TcpRequest;
 import br.com.gennex.interfaces.TcpRequestHandler;
 import br.com.gennex.interfaces.TcpResponse;
+import br.com.gennex.socket.Socket.TcpMessageFilter;
 import br.com.gennex.socket.client.ClientSocket;
 import br.com.gennex.socket.model.ServerName;
 import br.com.gennex.socket.model.ServerPort;
@@ -38,8 +43,22 @@ public class SocketTest {
 
 	private static ServerSocket serverSocket;
 
+	private static class AcceptFilter implements TcpMessageFilter {
+		@Override
+		public boolean accept(String message) {
+			return true;
+		}
+	}
+
+	private static class RejectFilter implements TcpMessageFilter {
+		@Override
+		public boolean accept(String message) {
+			return false;
+		}
+	}
+
 	@BeforeClass
-	public static void classSetUp() throws Exception {
+	public static void classSetUp() {
 		serverSocket = new ServerSocket(new ServerPort(port),
 				new SocketFactory() {
 
@@ -96,51 +115,48 @@ public class SocketTest {
 						return new MockClientSocket(socket);
 					}
 				});
-
+		espera();
 	}
 
 	@Test(timeout = 10000)
 	public void testConnect() {
-		while (true) {
+		if (clientSocket.isConnected()) {
+			assertNotNull(clientSocket.getSocket());
+			assertTrue(serverSocket.getTotalConnections() == 1);
+			assertTrue(clientSocket.isConnected());
+			assertTrue(clientSocket.getSocket().isConnected());
 			try {
-				Thread.sleep(500);
-			} catch (InterruptedException e1) {
-				fail(e1.getMessage());
-			}
-			if (clientSocket.isConnected()) {
-				assertTrue("Total: " + serverSocket.getTotalConnections(),
-						serverSocket.getTotalConnections() == 1);
-				assertTrue(true);
-				return;
+				assertNotNull(clientSocket.getSocket().getSocketOutputStream());
+			} catch (IOException e) {
+				fail(e.getMessage());
 			}
 		}
 	}
 
 	@Test(timeout = 10000)
 	public void testDisconnect() {
-		while (true) {
+		if (clientSocket.isConnected()) {
+			assertTrue("Total: " + serverSocket.getTotalConnections(),
+					serverSocket.getTotalConnections() == 1);
 			try {
-				Thread.sleep(500);
-			} catch (InterruptedException e1) {
-				fail(e1.getMessage());
-			}
-			if (clientSocket.isConnected()) {
+				clientSocket.disconnect();
+				assertNull(clientSocket.getSocket());
+				assertFalse(clientSocket.isConnected());
+				espera();
 				assertTrue("Total: " + serverSocket.getTotalConnections(),
-						serverSocket.getTotalConnections() == 1);
-				try {
-					clientSocket.disconnect();
-					try {
-						Thread.sleep(500);
-					} catch (InterruptedException e1) {
-						fail(e1.getMessage());
-					}
-					assertTrue("Total: " + serverSocket.getTotalConnections(),
-							serverSocket.getTotalConnections() == 0);
-					return;
-				} catch (IOException e) {
-					fail(e.getMessage());
-				}
+						serverSocket.getTotalConnections() == 0);
+				return;
+			} catch (IOException e) {
+				fail(e.getMessage());
 			}
+		}
+	}
+
+	private void espera() {
+		try {
+			Thread.sleep(500);
+		} catch (InterruptedException e1) {
+			fail(e1.getMessage());
 		}
 	}
 
@@ -149,6 +165,7 @@ public class SocketTest {
 		try {
 			clientSocket.disconnect();
 			assertFalse(clientSocket.isConnected());
+			clientSocket.cancel();
 		} catch (IOException e) {
 			fail(e.getMessage());
 		}
@@ -167,20 +184,81 @@ public class SocketTest {
 	@Test(timeout = 10000)
 	public void testRequest() {
 		FppsRequest request = new FppsRequestCommand(FppsUtil.Command);
-		while (!clientSocket.isConnected())
-			try {
-				Thread.sleep(10);
-			} catch (InterruptedException e) {
-				fail(e.getMessage());
-			}
 		clientSocket.getSocket().send(request);
-		while (!((MockClientSocket) clientSocket.getSocket()).isRecebido()) {
-			try {
-				Thread.sleep(10);
-			} catch (InterruptedException e) {
-				fail(e.getMessage());
-			}
+		espera();
+		assertTrue(((MockClientSocket) clientSocket.getSocket()).isRecebido());
+		Iterator<br.com.gennex.socket.Socket> it = serverSocket
+				.getSocketsAtivos().iterator();
+		br.com.gennex.socket.Socket socket = it.next();
+		assertNotNull(socket);
+		assertTrue(((MockServerSocket) socket).isRecebido());
+	}
+
+	@Test
+	public void logIfNull() {
+		Logger.getLogger(clientSocket.getSocket().getClass()).setLevel(
+				Level.INFO);
+		assertTrue(clientSocket.getSocket().canLog(null, "TESTE"));
+	}
+
+	@Test
+	public void logIfAccept() {
+		Logger.getLogger(clientSocket.getSocket().getClass()).setLevel(
+				Level.INFO);
+		assertTrue(clientSocket.getSocket().canLog(new AcceptFilter(), "TESTE"));
+	}
+
+	@Test
+	public void logIfReject() {
+		Logger.getLogger(clientSocket.getSocket().getClass()).setLevel(
+				Level.INFO);
+		assertFalse(clientSocket.getSocket()
+				.canLog(new RejectFilter(), "TESTE"));
+	}
+
+	@Test
+	public void logIfRejectDebug() {
+		Logger.getLogger(clientSocket.getSocket().getClass()).setLevel(
+				Level.DEBUG);
+		try {
+			assertTrue(clientSocket.getSocket().canLog(new RejectFilter(),
+					"TESTE"));
+		} finally {
+			Logger.getLogger(clientSocket.getSocket().getClass()).setLevel(
+					Level.INFO);
 		}
-		assertTrue(true);
+	}
+
+	@Test
+	public void testInetAddress() {
+		assertNotNull(clientSocket.getSocket().getInetAddress());
+	}
+
+	@Test
+	public void testReconnect() {
+		classTearDown();
+
+		espera();
+
+		assertFalse(clientSocket.isConnected());
+		assertNull(clientSocket.getSocket());
+
+		classSetUp();
+
+		try {
+			Thread.sleep(10000);
+		} catch (InterruptedException e) {
+			fail(e.getMessage());
+		}
+
+		assertNotNull(clientSocket.getSocket());
+		assertTrue(serverSocket.getTotalConnections() == 1);
+		assertTrue(clientSocket.isConnected());
+		assertTrue(clientSocket.getSocket().isConnected());
+		try {
+			assertNotNull(clientSocket.getSocket().getSocketOutputStream());
+		} catch (IOException e) {
+			fail(e.getMessage());
+		}
 	}
 }

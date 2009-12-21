@@ -9,6 +9,8 @@ import br.com.gennex.interfaces.TcpRequestCommand;
 import br.com.gennex.interfaces.TcpRequestHandler;
 import br.com.gennex.interfaces.TcpResponse;
 import br.com.gennex.socket.tcpcommand.messages.requests.FppsRequestCommand;
+import br.com.gennex.socket.tcpcommand.messages.requests.InvalidTcpRequest;
+import br.com.gennex.socket.tcpcommand.messages.requests.InvalidTcpRequestHandler;
 import br.com.gennex.socket.tcpcommand.messages.responses.FppsErrorResponse;
 
 public class TcpCommandSocket extends br.com.gennex.socket.Socket {
@@ -17,6 +19,7 @@ public class TcpCommandSocket extends br.com.gennex.socket.Socket {
 
 	public TcpCommandSocket(java.net.Socket socket) {
 		super(socket);
+		addHandler(new InvalidTcpRequest(), new InvalidTcpRequestHandler());
 	}
 
 	public void addHandler(TcpRequest request, TcpRequestHandler requestHandler) {

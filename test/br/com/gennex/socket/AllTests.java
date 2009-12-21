@@ -11,9 +11,10 @@ import br.com.gennex.socket.tcpcommand.messages.FppsMessageTest;
 import br.com.gennex.socket.tcpcommand.messages.HttpMessageTest;
 
 @RunWith(Suite.class)
-@Suite.SuiteClasses( { ServerNameTest.class, ServerPortTest.class,
-		FppsTcpCommandSocketTest.class, HttpTcpCommandSocketTest.class,
-		FppsMessageTest.class, HttpMessageTest.class, SocketTest.class })
+@Suite.SuiteClasses( { SocketTest.class, ServerNameTest.class,
+		ServerPortTest.class, FppsTcpCommandSocketTest.class,
+		HttpTcpCommandSocketTest.class, FppsMessageTest.class,
+		HttpMessageTest.class })
 public class AllTests {
 
 }

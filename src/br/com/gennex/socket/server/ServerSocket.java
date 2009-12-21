@@ -1,7 +1,9 @@
 package br.com.gennex.socket.server;
 
 import java.io.IOException;
+import java.net.SocketException;
 import java.security.InvalidParameterException;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Observable;
@@ -30,6 +32,16 @@ public class ServerSocket implements Runnable, Observer {
 	private final SocketAccepter socketAccepter;
 
 	private HashSet<Socket> socketsAtivos = new HashSet<Socket>();
+
+	public Collection<Socket> getSocketsAtivos() {
+		Collection<Socket> result = new HashSet<Socket>();
+
+		synchronized (socketsAtivos) {
+			result.addAll(socketsAtivos);
+		}
+
+		return result;
+	}
 
 	@Override
 	public void update(Observable socket, Object evento) {
@@ -147,6 +159,15 @@ public class ServerSocket implements Runnable, Observer {
 					java.net.Socket socket = server.accept();
 					this.socketAccepter.addSocket(socket);
 				} while (Thread.currentThread().isAlive());
+			} catch (SocketException e) {
+				if (!ativo)
+					return;
+				Logger.getLogger(getClass()).fatal(e.getMessage(), e);
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException f) {
+					Logger.getLogger(getClass()).error(f.getMessage(), f);
+				}
 			} catch (Exception e) {
 				Logger.getLogger(getClass()).fatal(e.getMessage(), e);
 				try {
@@ -175,6 +196,7 @@ public class ServerSocket implements Runnable, Observer {
 		}
 		this.ativo = false;
 		this.server.close();
+		Logger.getLogger(getClass()).info("Server socket closed");
 	}
 
 	public int getTotalConnections() {
