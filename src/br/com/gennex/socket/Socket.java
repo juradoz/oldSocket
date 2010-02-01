@@ -30,13 +30,17 @@ public abstract class Socket extends Observable implements Runnable,
 		public boolean accept(String message);
 	}
 
-	protected java.net.Socket rawSocket;
+	protected java.net.Socket rawSocket = null;
 
 	private BufferedReader bufferedreader;
 	private PrintWriter printwriter;
 
 	private TcpMessageFilter inputFilter = null;
 	private TcpMessageFilter outputFilter = null;
+
+	private void setRawSocket(java.net.Socket rawSocket) {
+		this.rawSocket = rawSocket;
+	}
 
 	/**
 	 * @param socket
@@ -46,15 +50,15 @@ public abstract class Socket extends Observable implements Runnable,
 		super();
 		if (!socket.isConnected())
 			return;
-		this.rawSocket = socket;
+		setRawSocket(socket);
 		if (socket.getInetAddress() != null)
 			Logger.getLogger(getClass()).info(
 					new StringBuffer(String.format("Connect from %s", socket
 							.getInetAddress().getHostName())));
 		try {
 			bufferedreader = new BufferedReader(new InputStreamReader(
-					this.rawSocket.getInputStream()));
-			printwriter = new PrintWriter(this.rawSocket.getOutputStream(),
+					getRawSocket().getInputStream()));
+			printwriter = new PrintWriter(getRawSocket().getOutputStream(),
 					true);
 		} catch (IOException e) {
 			Logger.getLogger(getClass()).error(e.getMessage(), e);
@@ -67,7 +71,10 @@ public abstract class Socket extends Observable implements Runnable,
 	 * @throws IOException
 	 */
 	public void disconnect() throws IOException {
-		this.rawSocket.close();
+		if (getRawSocket() == null)
+			return;
+		getRawSocket().close();
+		setRawSocket(null);
 	}
 
 	private TcpMessageFilter getInputFilter() {
@@ -85,7 +92,9 @@ public abstract class Socket extends Observable implements Runnable,
 	 * @throws IOException
 	 */
 	public OutputStream getSocketOutputStream() throws IOException {
-		return rawSocket.getOutputStream();
+		if (getRawSocket() == null)
+			return null;
+		return getRawSocket().getOutputStream();
 	}
 
 	/**
@@ -94,7 +103,7 @@ public abstract class Socket extends Observable implements Runnable,
 	 * @return true se conectado, false caso desconectado.
 	 */
 	public boolean isConnected() {
-		return this.rawSocket != null && this.rawSocket.isConnected();
+		return getRawSocket() != null && getRawSocket().isConnected();
 	}
 
 	boolean canLog(TcpMessageFilter filter, String message) {
@@ -203,9 +212,11 @@ public abstract class Socket extends Observable implements Runnable,
 		} catch (IOException e) {
 			Logger.getLogger(getClass()).error(e.getMessage(), e);
 		} finally {
-			Logger.getLogger(getClass()).info(
-					new StringBuffer("Disconnect from ").append(rawSocket
-							.getInetAddress().getHostName()));
+			if (getRawSocket() != null)
+				Logger.getLogger(getClass()).info(
+						new StringBuffer("Disconnect from ")
+								.append(getRawSocket().getInetAddress()
+										.getHostName()));
 			try {
 				disconnect();
 				notifyDisconnection();
@@ -236,6 +247,8 @@ public abstract class Socket extends Observable implements Runnable,
 	}
 
 	public java.net.InetAddress getInetAddress() {
+		if (getRawSocket() == null)
+			return null;
 		return getRawSocket().getInetAddress();
 	}
 }
