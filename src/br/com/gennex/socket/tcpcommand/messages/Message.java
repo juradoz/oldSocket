@@ -7,7 +7,7 @@ public abstract class Message implements TcpRequestCommand {
 	private String tcpMessage;
 
 	public Message(String tcpMessage) {
-		setTcpMessage(tcpMessage.toUpperCase());
+		setTcpMessage(tcpMessage);
 	}
 
 	protected abstract String getCommand(String tcpMessage);
