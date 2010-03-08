@@ -25,8 +25,14 @@ public class ServerNameTest {
 	}
 
 	@Test
-	public void testToString() {
-		assertEquals(name, serverName.toString());
+	public void testEqualsObject() {
+		ServerName serverName = new ServerName(name);
+
+		assertEquals(serverName, this.serverName);
+
+		serverName = new ServerName(name2);
+
+		assertFalse(serverName.equals(this.serverName));
 	}
 
 	@Test
@@ -41,14 +47,8 @@ public class ServerNameTest {
 	}
 
 	@Test
-	public void testEqualsObject() {
-		ServerName serverName = new ServerName(name);
-
-		assertEquals(serverName, this.serverName);
-
-		serverName = new ServerName(name2);
-
-		assertFalse(serverName.equals(this.serverName));
+	public void testToString() {
+		assertEquals(name, serverName.toString());
 	}
 
 }

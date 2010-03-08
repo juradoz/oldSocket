@@ -6,6 +6,7 @@ public class HttpMessage extends Message {
 		super(tcpMessage);
 	}
 
+	@Override
 	protected final String getCommand(String tcpMessage) {
 		int indice = tcpMessage.indexOf(" ");
 		if (indice > 0) {
@@ -16,6 +17,7 @@ public class HttpMessage extends Message {
 		}
 	}
 
+	@Override
 	protected final String[] getParameters(String tcpMessage) {
 		String[] s = tcpMessage.split(" ");
 		String[] result = new String[s.length - 1];

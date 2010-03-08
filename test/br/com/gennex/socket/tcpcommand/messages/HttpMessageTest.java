@@ -14,22 +14,6 @@ public class HttpMessageTest {
 	private HttpMessage message2;
 
 	@Test
-	public void testGetParametersString() {
-		message = new HttpRequestCommand(HttpUtil.ReqSemParams);
-		assertEquals(0, message.getParameters().length);
-		message = new HttpRequestCommand(HttpUtil.ReqSem1Param);
-		assertEquals(1, message.getParameters().length);
-		message = new HttpRequestCommand(HttpUtil.ReqSem2Param);
-		assertEquals(2, message.getParameters().length);
-		message = new HttpRequestCommand(HttpUtil.ReqSem3Param);
-		assertEquals(3, message.getParameters().length);
-		message = new HttpRequestCommand(HttpUtil.ReqSem3UltimoVazio);
-		assertEquals(3, message.getParameters().length);
-		message = new HttpRequestCommand(HttpUtil.ReqSem5Vazio);
-		assertEquals(5, message.getParameters().length);
-	}
-
-	@Test
 	public void testEqualsObject() {
 		message1 = new HttpRequestCommand(HttpUtil.ReqSemParams);
 		message2 = new HttpRequestCommand(HttpUtil.ReqSemParams);
@@ -128,6 +112,22 @@ public class HttpMessageTest {
 			assertEquals(HttpUtil.Param5Vazio
 					.split(HttpUtil.DelimitadorParametros)[i], message
 					.getParameters()[i]);
+	}
+
+	@Test
+	public void testGetParametersString() {
+		message = new HttpRequestCommand(HttpUtil.ReqSemParams);
+		assertEquals(0, message.getParameters().length);
+		message = new HttpRequestCommand(HttpUtil.ReqSem1Param);
+		assertEquals(1, message.getParameters().length);
+		message = new HttpRequestCommand(HttpUtil.ReqSem2Param);
+		assertEquals(2, message.getParameters().length);
+		message = new HttpRequestCommand(HttpUtil.ReqSem3Param);
+		assertEquals(3, message.getParameters().length);
+		message = new HttpRequestCommand(HttpUtil.ReqSem3UltimoVazio);
+		assertEquals(3, message.getParameters().length);
+		message = new HttpRequestCommand(HttpUtil.ReqSem5Vazio);
+		assertEquals(5, message.getParameters().length);
 	}
 
 	@Test

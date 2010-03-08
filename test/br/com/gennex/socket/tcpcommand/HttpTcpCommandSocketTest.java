@@ -14,7 +14,7 @@ import br.com.gennex.interfaces.TcpResponse;
 import br.com.gennex.socket.Socket;
 import br.com.gennex.socket.tcpcommand.messages.requests.HttpRequestCommand;
 import br.com.gennex.socket.tcpcommand.messages.responses.HttpResponse;
-import br.com.gennex.socket.util.HttpUtil;
+import br.com.gennex.socket.util.Util;
 
 public class HttpTcpCommandSocketTest {
 
@@ -52,7 +52,7 @@ public class HttpTcpCommandSocketTest {
 								.getParameters().length; i++)
 							assertNotNull(((HttpRequestCommand) request)
 									.getParameters()[i]);
-						return new HttpResponse(HttpUtil.response);
+						return new HttpResponse(Util.response);
 					}
 				});
 	}
@@ -76,17 +76,17 @@ public class HttpTcpCommandSocketTest {
 	@Test
 	public void testProcessRequest() {
 		try {
-			assertEquals(new HttpResponse(HttpUtil.response), tcpCommandSocket
+			assertEquals(new HttpResponse(Util.response), tcpCommandSocket
 					.processRequest(new HttpRequestCommand(ReqSemParams)));
-			assertEquals(new HttpResponse(HttpUtil.response), tcpCommandSocket
+			assertEquals(new HttpResponse(Util.response), tcpCommandSocket
 					.processRequest(new HttpRequestCommand(ReqSem1Param)));
-			assertEquals(new HttpResponse(HttpUtil.response), tcpCommandSocket
+			assertEquals(new HttpResponse(Util.response), tcpCommandSocket
 					.processRequest(new HttpRequestCommand(ReqSem2Param)));
-			assertEquals(new HttpResponse(HttpUtil.response), tcpCommandSocket
+			assertEquals(new HttpResponse(Util.response), tcpCommandSocket
 					.processRequest(new HttpRequestCommand(ReqSem3Param)));
-			assertEquals(new HttpResponse(HttpUtil.response), tcpCommandSocket
+			assertEquals(new HttpResponse(Util.response), tcpCommandSocket
 					.processRequest(new HttpRequestCommand(ReqSem3UltimoVazio)));
-			assertEquals(new HttpResponse(HttpUtil.response), tcpCommandSocket
+			assertEquals(new HttpResponse(Util.response), tcpCommandSocket
 					.processRequest(new HttpRequestCommand(ReqSem5Vazio)));
 		} catch (Exception e) {
 			e.printStackTrace();

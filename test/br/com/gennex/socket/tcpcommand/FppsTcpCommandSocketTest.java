@@ -16,6 +16,7 @@ import br.com.gennex.socket.tcpcommand.messages.requests.FppsRequest;
 import br.com.gennex.socket.tcpcommand.messages.requests.FppsRequestCommand;
 import br.com.gennex.socket.tcpcommand.messages.responses.FppsResponse;
 import br.com.gennex.socket.util.FppsUtil;
+import br.com.gennex.socket.util.Util;
 
 public class FppsTcpCommandSocketTest {
 
@@ -35,7 +36,7 @@ public class FppsTcpCommandSocketTest {
 								.getParameters().length; i++)
 							assertNotNull(((FppsRequest) request)
 									.getParameters()[i]);
-						return new FppsResponse(FppsUtil.response);
+						return new FppsResponse(Util.response);
 					}
 				});
 	}
@@ -60,22 +61,22 @@ public class FppsTcpCommandSocketTest {
 	@Test
 	public void testProcessRequest() {
 		try {
-			assertEquals(new FppsResponse(FppsUtil.response), tcpCommandSocket
+			assertEquals(new FppsResponse(Util.response), tcpCommandSocket
 					.processRequest(new FppsRequestCommand(
 							FppsUtil.ReqSemParams)));
-			assertEquals(new FppsResponse(FppsUtil.response), tcpCommandSocket
+			assertEquals(new FppsResponse(Util.response), tcpCommandSocket
 					.processRequest(new FppsRequestCommand(
 							FppsUtil.ReqSem1Param)));
-			assertEquals(new FppsResponse(FppsUtil.response), tcpCommandSocket
+			assertEquals(new FppsResponse(Util.response), tcpCommandSocket
 					.processRequest(new FppsRequestCommand(
 							FppsUtil.ReqSem2Param)));
-			assertEquals(new FppsResponse(FppsUtil.response), tcpCommandSocket
+			assertEquals(new FppsResponse(Util.response), tcpCommandSocket
 					.processRequest(new FppsRequestCommand(
 							FppsUtil.ReqSem3Param)));
-			assertEquals(new FppsResponse(FppsUtil.response), tcpCommandSocket
+			assertEquals(new FppsResponse(Util.response), tcpCommandSocket
 					.processRequest(new FppsRequestCommand(
 							FppsUtil.ReqSem3UltimoVazio)));
-			assertEquals(new FppsResponse(FppsUtil.response), tcpCommandSocket
+			assertEquals(new FppsResponse(Util.response), tcpCommandSocket
 					.processRequest(new FppsRequestCommand(
 							FppsUtil.ReqSem5Vazio)));
 		} catch (Exception e) {

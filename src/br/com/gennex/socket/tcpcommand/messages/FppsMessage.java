@@ -6,6 +6,7 @@ public abstract class FppsMessage extends Message {
 		super(tcpMessage);
 	}
 
+	@Override
 	protected final String getCommand(String tcpMessage) {
 		if (tcpMessage.indexOf("(") > 0) {
 			String s = tcpMessage.substring(0, tcpMessage.indexOf("("));
@@ -15,6 +16,7 @@ public abstract class FppsMessage extends Message {
 		}
 	}
 
+	@Override
 	protected final String[] getParameters(String tcpMessage) {
 		String[] s = new String[0];
 		int i = tcpMessage.indexOf("(");

@@ -11,15 +11,6 @@ public class ServerPort {
 		this.serverPort = port;
 	}
 
-	public int getServerPort() {
-		return serverPort;
-	}
-
-	@Override
-	public String toString() {
-		return String.valueOf(getServerPort());
-	}
-
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -32,5 +23,14 @@ public class ServerPort {
 		if (serverPort != other.serverPort)
 			return false;
 		return true;
+	}
+
+	public int getServerPort() {
+		return serverPort;
+	}
+
+	@Override
+	public String toString() {
+		return String.valueOf(getServerPort());
 	}
 }

@@ -30,16 +30,16 @@ public class MockServerSocket extends TcpCommandSocket {
 							assertNotNull(((FppsRequest) request)
 									.getParameters()[i]);
 						setRecebido(true);
-						return new FppsResponse(FppsUtil.response);
+						return new FppsResponse(Util.response);
 					}
 				});
 	}
 
-	private void setRecebido(boolean recebido) {
-		this.recebido = recebido;
-	}
-
 	public boolean isRecebido() {
 		return recebido;
+	}
+
+	private void setRecebido(boolean recebido) {
+		this.recebido = recebido;
 	}
 }

@@ -14,22 +14,6 @@ public class FppsMessageTest {
 	private FppsMessage message2;
 
 	@Test
-	public void testGetParametersString() {
-		message = new FppsRequestCommand(FppsUtil.ReqSemParams);
-		assertEquals(0, message.getParameters().length);
-		message = new FppsRequestCommand(FppsUtil.ReqSem1Param);
-		assertEquals(1, message.getParameters().length);
-		message = new FppsRequestCommand(FppsUtil.ReqSem2Param);
-		assertEquals(2, message.getParameters().length);
-		message = new FppsRequestCommand(FppsUtil.ReqSem3Param);
-		assertEquals(3, message.getParameters().length);
-		message = new FppsRequestCommand(FppsUtil.ReqSem3UltimoVazio);
-		assertEquals(3, message.getParameters().length);
-		message = new FppsRequestCommand(FppsUtil.ReqSem5Vazio);
-		assertEquals(5, message.getParameters().length);
-	}
-
-	@Test
 	public void testEqualsObject() {
 		message1 = new FppsRequestCommand(FppsUtil.ReqSemParams);
 		message2 = new FppsRequestCommand(FppsUtil.ReqSemParams);
@@ -128,6 +112,22 @@ public class FppsMessageTest {
 			assertEquals(FppsUtil.Param5Vazio
 					.split(FppsUtil.DelimitadorParametros)[i], message
 					.getParameters()[i]);
+	}
+
+	@Test
+	public void testGetParametersString() {
+		message = new FppsRequestCommand(FppsUtil.ReqSemParams);
+		assertEquals(0, message.getParameters().length);
+		message = new FppsRequestCommand(FppsUtil.ReqSem1Param);
+		assertEquals(1, message.getParameters().length);
+		message = new FppsRequestCommand(FppsUtil.ReqSem2Param);
+		assertEquals(2, message.getParameters().length);
+		message = new FppsRequestCommand(FppsUtil.ReqSem3Param);
+		assertEquals(3, message.getParameters().length);
+		message = new FppsRequestCommand(FppsUtil.ReqSem3UltimoVazio);
+		assertEquals(3, message.getParameters().length);
+		message = new FppsRequestCommand(FppsUtil.ReqSem5Vazio);
+		assertEquals(5, message.getParameters().length);
 	}
 
 	@Test

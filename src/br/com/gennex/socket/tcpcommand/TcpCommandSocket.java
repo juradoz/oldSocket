@@ -26,10 +26,6 @@ public class TcpCommandSocket extends br.com.gennex.socket.Socket {
 		handlerList.put(request.toString(), requestHandler);
 	}
 
-	public TcpRequestHandler removeHandler(TcpRequest request) {
-		return handlerList.remove(request.toString());
-	}
-
 	public void clearHandlers() {
 		handlerList.clear();
 	}
@@ -89,6 +85,10 @@ public class TcpCommandSocket extends br.com.gennex.socket.Socket {
 				return;
 			send(response);
 		}
+	}
+
+	public TcpRequestHandler removeHandler(TcpRequest request) {
+		return handlerList.remove(request.toString());
 	}
 
 }

@@ -52,6 +52,11 @@ public class ClientSocket extends TimerTask implements Observer {
 	}
 
 	public ClientSocket(ServerName host, ServerPort port,
+			SocketFactory socketFactory, int reconnectInterval) {
+		this(host, port, socketFactory, reconnectInterval, false);
+	}
+
+	public ClientSocket(ServerName host, ServerPort port,
 			SocketFactory socketFactory, int reconnectInterval, boolean isDaemon) {
 		super();
 		this.serverName = host;
@@ -59,11 +64,6 @@ public class ClientSocket extends TimerTask implements Observer {
 		this.socketFactory = socketFactory;
 		new Timer(getClass().getSimpleName(), isDaemon).schedule(this, 0,
 				reconnectInterval);
-	}
-
-	public ClientSocket(ServerName host, ServerPort port,
-			SocketFactory socketFactory, int reconnectInterval) {
-		this(host, port, socketFactory, reconnectInterval, false);
 	}
 
 	private void checkConnection() {
@@ -116,6 +116,13 @@ public class ClientSocket extends TimerTask implements Observer {
 	}
 
 	/**
+	 * @return o intervalo de reconexao automatica.
+	 */
+	public final int getReconnectInterval() {
+		return reconnectInterval;
+	}
+
+	/**
 	 * @return o host atual onde o socket se conecta.
 	 */
 	public final ServerName getServerName() {
@@ -129,13 +136,6 @@ public class ClientSocket extends TimerTask implements Observer {
 		return serverPort;
 	}
 
-	/**
-	 * @return o intervalo de reconexao automatica.
-	 */
-	public final int getReconnectInterval() {
-		return reconnectInterval;
-	}
-
 	public Socket getSocket() {
 		return socket;
 	}
@@ -146,6 +146,10 @@ public class ClientSocket extends TimerTask implements Observer {
 	 */
 	public final SocketFactory getSocketFactory() {
 		return socketFactory;
+	}
+
+	public boolean isConnected() {
+		return getSocket() != null && getSocket().isConnected();
 	}
 
 	/*
@@ -227,10 +231,6 @@ public class ClientSocket extends TimerTask implements Observer {
 		if (!(arg instanceof Socket.EventDisconnected))
 			return;
 		setSocket(null);
-	}
-
-	public boolean isConnected() {
-		return getSocket() != null && getSocket().isConnected();
 	}
 
 }

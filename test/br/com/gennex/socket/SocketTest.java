@@ -34,14 +34,9 @@ import br.com.gennex.socket.tcpcommand.messages.requests.FppsRequestCommand;
 import br.com.gennex.socket.tcpcommand.messages.responses.FppsResponse;
 import br.com.gennex.socket.util.FppsUtil;
 import br.com.gennex.socket.util.MockServerSocket;
+import br.com.gennex.socket.util.Util;
 
 public class SocketTest {
-
-	private static final int port = 25000;
-
-	private ClientSocket clientSocket;
-
-	private static ServerSocket serverSocket;
 
 	private static class AcceptFilter implements TcpMessageFilter {
 		@Override
@@ -50,12 +45,47 @@ public class SocketTest {
 		}
 	}
 
+	private class MockClientSocket extends TcpCommandSocket {
+
+		private boolean recebido = false;
+
+		public MockClientSocket(Socket socket) {
+			super(socket);
+			addHandler(new FppsRequestCommand(Util.response),
+					new TcpRequestHandler() {
+
+						@Override
+						public TcpResponse process(
+								br.com.gennex.socket.Socket socket,
+								TcpRequest request) throws Exception {
+							for (int i = 0; i < ((FppsRequest) request)
+									.getParameters().length; i++)
+								assertNotNull(((FppsRequest) request)
+										.getParameters()[i]);
+							setRecebido(true);
+							return new FppsResponse(Util.response);
+						}
+					});
+		}
+
+		public boolean isRecebido() {
+			return recebido;
+		}
+
+		public void setRecebido(boolean recebido) {
+			this.recebido = recebido;
+		}
+
+	}
+
 	private static class RejectFilter implements TcpMessageFilter {
 		@Override
 		public boolean accept(String message) {
 			return false;
 		}
 	}
+
+	private static final int port = 25000;
 
 	@BeforeClass
 	public static void classSetUp() {
@@ -71,37 +101,61 @@ public class SocketTest {
 
 	}
 
-	private class MockClientSocket extends TcpCommandSocket {
-
-		public MockClientSocket(Socket socket) {
-			super(socket);
-			addHandler(new FppsRequestCommand(FppsUtil.response),
-					new TcpRequestHandler() {
-
-						@Override
-						public TcpResponse process(
-								br.com.gennex.socket.Socket socket,
-								TcpRequest request) throws Exception {
-							for (int i = 0; i < ((FppsRequest) request)
-									.getParameters().length; i++)
-								assertNotNull(((FppsRequest) request)
-										.getParameters()[i]);
-							setRecebido(true);
-							return new FppsResponse(FppsUtil.response);
-						}
-					});
+	@AfterClass
+	public static void classTearDown() {
+		try {
+			serverSocket.close();
+			assertEquals(0, serverSocket.getTotalConnections());
+		} catch (IOException e) {
+			fail(e.getMessage());
 		}
+	}
 
-		private boolean recebido = false;
+	private ClientSocket clientSocket;
 
-		public boolean isRecebido() {
-			return recebido;
+	private static ServerSocket serverSocket;
+
+	private void espera() {
+		try {
+			Thread.sleep(500);
+		} catch (InterruptedException e1) {
+			fail(e1.getMessage());
 		}
+	}
 
-		public void setRecebido(boolean recebido) {
-			this.recebido = recebido;
+	@Test
+	public void logIfAccept() {
+		Logger.getLogger(clientSocket.getSocket().getClass()).setLevel(
+				Level.INFO);
+		assertTrue(clientSocket.getSocket().canLog(new AcceptFilter(), "TESTE"));
+	}
+
+	@Test
+	public void logIfNull() {
+		Logger.getLogger(clientSocket.getSocket().getClass()).setLevel(
+				Level.INFO);
+		assertTrue(clientSocket.getSocket().canLog(null, "TESTE"));
+	}
+
+	@Test
+	public void logIfReject() {
+		Logger.getLogger(clientSocket.getSocket().getClass()).setLevel(
+				Level.INFO);
+		assertFalse(clientSocket.getSocket()
+				.canLog(new RejectFilter(), "TESTE"));
+	}
+
+	@Test
+	public void logIfRejectDebug() {
+		Logger.getLogger(clientSocket.getSocket().getClass()).setLevel(
+				Level.DEBUG);
+		try {
+			assertTrue(clientSocket.getSocket().canLog(new RejectFilter(),
+					"TESTE"));
+		} finally {
+			Logger.getLogger(clientSocket.getSocket().getClass()).setLevel(
+					Level.INFO);
 		}
-
 	}
 
 	@Before
@@ -116,6 +170,17 @@ public class SocketTest {
 					}
 				});
 		espera();
+	}
+
+	@After
+	public void teardDown() {
+		try {
+			clientSocket.disconnect();
+			assertFalse(clientSocket.isConnected());
+			clientSocket.cancel();
+		} catch (IOException e) {
+			fail(e.getMessage());
+		}
 	}
 
 	@Test(timeout = 10000)
@@ -152,83 +217,6 @@ public class SocketTest {
 		}
 	}
 
-	private void espera() {
-		try {
-			Thread.sleep(500);
-		} catch (InterruptedException e1) {
-			fail(e1.getMessage());
-		}
-	}
-
-	@After
-	public void teardDown() {
-		try {
-			clientSocket.disconnect();
-			assertFalse(clientSocket.isConnected());
-			clientSocket.cancel();
-		} catch (IOException e) {
-			fail(e.getMessage());
-		}
-	}
-
-	@AfterClass
-	public static void classTearDown() {
-		try {
-			serverSocket.close();
-			assertEquals(0, serverSocket.getTotalConnections());
-		} catch (IOException e) {
-			fail(e.getMessage());
-		}
-	}
-
-	@Test(timeout = 10000)
-	public void testRequest() {
-		FppsRequest request = new FppsRequestCommand(FppsUtil.Command);
-		clientSocket.getSocket().send(request);
-		espera();
-		assertTrue(((MockClientSocket) clientSocket.getSocket()).isRecebido());
-		Iterator<br.com.gennex.socket.Socket> it = serverSocket
-				.getSocketsAtivos().iterator();
-		br.com.gennex.socket.Socket socket = it.next();
-		assertNotNull(socket);
-		assertTrue(((MockServerSocket) socket).isRecebido());
-	}
-
-	@Test
-	public void logIfNull() {
-		Logger.getLogger(clientSocket.getSocket().getClass()).setLevel(
-				Level.INFO);
-		assertTrue(clientSocket.getSocket().canLog(null, "TESTE"));
-	}
-
-	@Test
-	public void logIfAccept() {
-		Logger.getLogger(clientSocket.getSocket().getClass()).setLevel(
-				Level.INFO);
-		assertTrue(clientSocket.getSocket().canLog(new AcceptFilter(), "TESTE"));
-	}
-
-	@Test
-	public void logIfReject() {
-		Logger.getLogger(clientSocket.getSocket().getClass()).setLevel(
-				Level.INFO);
-		assertFalse(clientSocket.getSocket()
-				.canLog(new RejectFilter(), "TESTE"));
-	}
-
-	@Test
-	public void logIfRejectDebug() {
-		Logger.getLogger(clientSocket.getSocket().getClass()).setLevel(
-				Level.DEBUG);
-		try {
-			assertTrue(clientSocket.getSocket().canLog(new RejectFilter(),
-					"TESTE"));
-		} finally {
-			Logger.getLogger(clientSocket.getSocket().getClass()).setLevel(
-					Level.INFO);
-		}
-	}
-
 	@Test
 	public void testInetAddress() {
 		assertNotNull(clientSocket.getSocket().getInetAddress());
@@ -260,5 +248,18 @@ public class SocketTest {
 		} catch (IOException e) {
 			fail(e.getMessage());
 		}
+	}
+
+	@Test(timeout = 10000)
+	public void testRequest() {
+		FppsRequest request = new FppsRequestCommand(FppsUtil.Command);
+		clientSocket.getSocket().send(request);
+		espera();
+		assertTrue(((MockClientSocket) clientSocket.getSocket()).isRecebido());
+		Iterator<br.com.gennex.socket.Socket> it = serverSocket
+				.getSocketsAtivos().iterator();
+		br.com.gennex.socket.Socket socket = it.next();
+		assertNotNull(socket);
+		assertTrue(((MockServerSocket) socket).isRecebido());
 	}
 }

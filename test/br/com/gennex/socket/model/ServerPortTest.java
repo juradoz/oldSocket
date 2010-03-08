@@ -17,22 +17,6 @@ public class ServerPortTest {
 
 	private ServerPort serverPort;
 
-	@Test(expected = InvalidParameterException.class)
-	public void testServerPort() {
-		serverPort = new ServerPort(nullPort);
-		fail();
-	}
-
-	@Test
-	public void testGetServerPort() {
-		assertEquals(port, serverPort.getServerPort());
-	}
-
-	@Test
-	public void testToString() {
-		assertEquals(String.valueOf(port), serverPort.toString());
-	}
-
 	@Before
 	public void setUp() throws Exception {
 		serverPort = new ServerPort(port);
@@ -46,6 +30,22 @@ public class ServerPortTest {
 
 		serverPort = new ServerPort(port2);
 		assertFalse(serverPort.equals(this.serverPort));
+	}
+
+	@Test
+	public void testGetServerPort() {
+		assertEquals(port, serverPort.getServerPort());
+	}
+
+	@Test(expected = InvalidParameterException.class)
+	public void testServerPort() {
+		serverPort = new ServerPort(nullPort);
+		fail();
+	}
+
+	@Test
+	public void testToString() {
+		assertEquals(String.valueOf(port), serverPort.toString());
 	}
 
 }

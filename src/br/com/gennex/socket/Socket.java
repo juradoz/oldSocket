@@ -38,10 +38,6 @@ public abstract class Socket extends Observable implements Runnable,
 	private TcpMessageFilter inputFilter = null;
 	private TcpMessageFilter outputFilter = null;
 
-	private void setRawSocket(java.net.Socket rawSocket) {
-		this.rawSocket = rawSocket;
-	}
-
 	/**
 	 * @param socket
 	 *            o Socket da conexão que será gerenciado.
@@ -65,6 +61,11 @@ public abstract class Socket extends Observable implements Runnable,
 		}
 	}
 
+	boolean canLog(TcpMessageFilter filter, String message) {
+		return filter == null || filter.accept(message)
+				|| Logger.getLogger(getClass()).isDebugEnabled();
+	}
+
 	/**
 	 * Desconecta o socket.
 	 * 
@@ -77,12 +78,22 @@ public abstract class Socket extends Observable implements Runnable,
 		setRawSocket(null);
 	}
 
+	public java.net.InetAddress getInetAddress() {
+		if (getRawSocket() == null)
+			return null;
+		return getRawSocket().getInetAddress();
+	}
+
 	private TcpMessageFilter getInputFilter() {
 		return inputFilter;
 	}
 
 	private TcpMessageFilter getOutputFilter() {
 		return outputFilter;
+	}
+
+	protected java.net.Socket getRawSocket() {
+		return this.rawSocket;
 	}
 
 	/**
@@ -104,11 +115,6 @@ public abstract class Socket extends Observable implements Runnable,
 	 */
 	public boolean isConnected() {
 		return getRawSocket() != null && getRawSocket().isConnected();
-	}
-
-	boolean canLog(TcpMessageFilter filter, String message) {
-		return filter == null || filter.accept(message)
-				|| Logger.getLogger(getClass()).isDebugEnabled();
 	}
 
 	/**
@@ -147,16 +153,6 @@ public abstract class Socket extends Observable implements Runnable,
 				.append(message).toString());
 	}
 
-	private void raiseEvent(Object event) {
-		try {
-			setChanged();
-			notifyObservers(event);
-		} catch (Exception e) {
-			Logger.getLogger(getClass()).error(e.getMessage(), e);
-		}
-
-	}
-
 	private void notifyConnection() {
 		raiseEvent(new EventConnected());
 	}
@@ -166,6 +162,16 @@ public abstract class Socket extends Observable implements Runnable,
 	}
 
 	protected abstract void processStringRequest(String s) throws Exception;
+
+	private void raiseEvent(Object event) {
+		try {
+			setChanged();
+			notifyObservers(event);
+		} catch (Exception e) {
+			Logger.getLogger(getClass()).error(e.getMessage(), e);
+		}
+
+	}
 
 	public void run() {
 		socketLifeCycle();
@@ -197,6 +203,10 @@ public abstract class Socket extends Observable implements Runnable,
 
 	public synchronized void setOutputFilter(TcpMessageFilter outputFilter) {
 		this.outputFilter = outputFilter;
+	}
+
+	private void setRawSocket(java.net.Socket rawSocket) {
+		this.rawSocket = rawSocket;
 	}
 
 	private void socketLifeCycle() {
@@ -240,15 +250,5 @@ public abstract class Socket extends Observable implements Runnable,
 				Logger.getLogger(getClass()).error(e.getMessage(), e);
 			}
 		} while (Thread.currentThread().isAlive());
-	}
-
-	protected java.net.Socket getRawSocket() {
-		return this.rawSocket;
-	}
-
-	public java.net.InetAddress getInetAddress() {
-		if (getRawSocket() == null)
-			return null;
-		return getRawSocket().getInetAddress();
 	}
 }

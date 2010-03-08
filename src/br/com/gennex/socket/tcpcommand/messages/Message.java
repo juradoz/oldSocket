@@ -10,43 +10,6 @@ public abstract class Message implements TcpRequestCommand {
 		setTcpMessage(tcpMessage);
 	}
 
-	protected abstract String getCommand(String tcpMessage);
-
-	@Override
-	public final String getCommand() {
-		return getCommand(getTcpMessage());
-	}
-
-	protected abstract String[] getParameters(String tcpMessage);
-
-	@Override
-	public final String[] getParameters() {
-		return getParameters(getTcpMessage());
-	}
-
-	@Override
-	public final String getTcpMessage() {
-		return this.tcpMessage;
-	}
-
-	private final void setTcpMessage(String tcpMessage) {
-		this.tcpMessage = tcpMessage;
-	}
-
-	@Override
-	public String toString() {
-		return this.getTcpMessage();
-	}
-
-	@Override
-	public final int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((tcpMessage == null) ? 0 : tcpMessage.hashCode());
-		return result;
-	}
-
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -62,5 +25,42 @@ public abstract class Message implements TcpRequestCommand {
 		} else if (!tcpMessage.equalsIgnoreCase(other.getTcpMessage()))
 			return false;
 		return true;
+	}
+
+	@Override
+	public final String getCommand() {
+		return getCommand(getTcpMessage());
+	}
+
+	protected abstract String getCommand(String tcpMessage);
+
+	@Override
+	public final String[] getParameters() {
+		return getParameters(getTcpMessage());
+	}
+
+	protected abstract String[] getParameters(String tcpMessage);
+
+	@Override
+	public final String getTcpMessage() {
+		return this.tcpMessage;
+	}
+
+	@Override
+	public final int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((tcpMessage == null) ? 0 : tcpMessage.hashCode());
+		return result;
+	}
+
+	private final void setTcpMessage(String tcpMessage) {
+		this.tcpMessage = tcpMessage;
+	}
+
+	@Override
+	public String toString() {
+		return this.getTcpMessage();
 	}
 }

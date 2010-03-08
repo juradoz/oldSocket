@@ -27,42 +27,21 @@ import br.com.gennex.socket.model.ServerPort;
  */
 public class ServerSocket implements Runnable, Observer {
 
-	private ServerPort serverPort;
-
-	private final SocketAccepter socketAccepter;
-
-	private HashSet<Socket> socketsAtivos = new HashSet<Socket>();
-
-	public Collection<Socket> getSocketsAtivos() {
-		Collection<Socket> result = new HashSet<Socket>();
-
-		synchronized (socketsAtivos) {
-			result.addAll(socketsAtivos);
-		}
-
-		return result;
-	}
-
-	@Override
-	public void update(Observable socket, Object evento) {
-		if (!(evento instanceof EventDisconnected))
-			return;
-		synchronized (socketsAtivos) {
-			socketsAtivos.remove(socket);
-		}
-	}
-
 	private class SocketAccepter implements Runnable {
 
 		private final ServerSocket parent;
 		private final SocketFactory socketFactory;
+
+		private BlockingQueue<java.net.Socket> sockets = new LinkedBlockingQueue<java.net.Socket>();
 
 		private SocketAccepter(ServerSocket parent, SocketFactory socketFactory) {
 			this.parent = parent;
 			this.socketFactory = socketFactory;
 		}
 
-		private BlockingQueue<java.net.Socket> sockets = new LinkedBlockingQueue<java.net.Socket>();
+		public void addSocket(java.net.Socket socket) {
+			sockets.offer(socket);
+		}
 
 		@Override
 		public void run() {
@@ -87,11 +66,17 @@ public class ServerSocket implements Runnable, Observer {
 
 			} while (Thread.currentThread().isAlive());
 		}
-
-		public void addSocket(java.net.Socket socket) {
-			sockets.offer(socket);
-		}
 	}
+
+	private ServerPort serverPort;
+
+	private final SocketAccepter socketAccepter;
+
+	private HashSet<Socket> socketsAtivos = new HashSet<Socket>();
+
+	private java.net.ServerSocket server;
+
+	private boolean ativo = true;
 
 	/**
 	 * @param port
@@ -133,6 +118,24 @@ public class ServerSocket implements Runnable, Observer {
 		t.start();
 	}
 
+	public void close() throws IOException {
+		synchronized (socketsAtivos) {
+			Iterator<Socket> it = socketsAtivos.iterator();
+			while (it.hasNext()) {
+				Socket socket = it.next();
+				try {
+					socket.disconnect();
+				} catch (IOException e) {
+					Logger.getLogger(getClass()).error(e.getMessage(), e);
+				}
+				it.remove();
+			}
+		}
+		this.ativo = false;
+		this.server.close();
+		Logger.getLogger(getClass()).info("Server socket closed");
+	}
+
 	/**
 	 * @return a porta onde o servidor atualmente escuta.
 	 */
@@ -140,7 +143,21 @@ public class ServerSocket implements Runnable, Observer {
 		return serverPort;
 	}
 
-	private java.net.ServerSocket server;
+	public Collection<Socket> getSocketsAtivos() {
+		Collection<Socket> result = new HashSet<Socket>();
+
+		synchronized (socketsAtivos) {
+			result.addAll(socketsAtivos);
+		}
+
+		return result;
+	}
+
+	public int getTotalConnections() {
+		synchronized (socketsAtivos) {
+			return socketsAtivos.size();
+		}
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -179,29 +196,12 @@ public class ServerSocket implements Runnable, Observer {
 		} while (Thread.currentThread().isAlive() && ativo);
 	}
 
-	private boolean ativo = true;
-
-	public void close() throws IOException {
+	@Override
+	public void update(Observable socket, Object evento) {
+		if (!(evento instanceof EventDisconnected))
+			return;
 		synchronized (socketsAtivos) {
-			Iterator<Socket> it = socketsAtivos.iterator();
-			while (it.hasNext()) {
-				Socket socket = it.next();
-				try {
-					socket.disconnect();
-				} catch (IOException e) {
-					Logger.getLogger(getClass()).error(e.getMessage(), e);
-				}
-				it.remove();
-			}
-		}
-		this.ativo = false;
-		this.server.close();
-		Logger.getLogger(getClass()).info("Server socket closed");
-	}
-
-	public int getTotalConnections() {
-		synchronized (socketsAtivos) {
-			return socketsAtivos.size();
+			socketsAtivos.remove(socket);
 		}
 	}
 }
