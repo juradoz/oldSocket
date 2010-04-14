@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.util.Calendar;
 import java.util.Observable;
 
 import org.apache.log4j.Logger;
@@ -214,9 +215,10 @@ public abstract class Socket extends Observable implements Runnable,
 		sendHello();
 		try {
 			waitLines();
+			Logger.getLogger(getClass()).info("Desconectado!");
 		} catch (SocketException e) {
-			if (Logger.getLogger(getClass()).isDebugEnabled())
-				Logger.getLogger(getClass()).debug(e.getMessage());
+			// if (Logger.getLogger(getClass()).isDebugEnabled())
+			Logger.getLogger(getClass()).error(e.getMessage(), e);
 		} catch (SocketTimeoutException e) {
 			Logger.getLogger(getClass()).warn(e.getMessage());
 		} catch (IOException e) {
@@ -245,7 +247,21 @@ public abstract class Socket extends Observable implements Runnable,
 			logReceived(s);
 
 			try {
+				Calendar inicio = Calendar.getInstance();
 				processStringRequest(s);
+				Calendar termino = Calendar.getInstance();
+				if (termino.getTimeInMillis() - inicio.getTimeInMillis() > 1000)
+					Logger
+							.getLogger(getClass())
+							.info(
+									String
+											.format(
+													"Processamento da mensagem %s demorou %dms",
+													s,
+													Calendar.getInstance()
+															.getTimeInMillis()
+															- inicio
+																	.getTimeInMillis()));
 			} catch (Exception e) {
 				Logger.getLogger(getClass()).error(e.getMessage(), e);
 			}
