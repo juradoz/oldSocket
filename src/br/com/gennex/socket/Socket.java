@@ -215,9 +215,8 @@ public abstract class Socket extends Observable implements Runnable,
 		sendHello();
 		try {
 			waitLines();
-			Logger.getLogger(getClass()).info("Desconectado!");
+			Logger.getLogger(getClass()).info("Disconnected!");
 		} catch (SocketException e) {
-			// if (Logger.getLogger(getClass()).isDebugEnabled())
 			Logger.getLogger(getClass()).error(e.getMessage(), e);
 		} catch (SocketTimeoutException e) {
 			Logger.getLogger(getClass()).warn(e.getMessage());
@@ -247,21 +246,14 @@ public abstract class Socket extends Observable implements Runnable,
 			logReceived(s);
 
 			try {
-				Calendar inicio = Calendar.getInstance();
+				Calendar start = Calendar.getInstance();
 				processStringRequest(s);
-				Calendar termino = Calendar.getInstance();
-				if (termino.getTimeInMillis() - inicio.getTimeInMillis() > 1000)
-					Logger
-							.getLogger(getClass())
-							.info(
-									String
-											.format(
-													"Processamento da mensagem %s demorou %dms",
-													s,
-													Calendar.getInstance()
-															.getTimeInMillis()
-															- inicio
-																	.getTimeInMillis()));
+				Calendar end = Calendar.getInstance();
+				if (end.getTimeInMillis() - start.getTimeInMillis() > 1000)
+					Logger.getLogger(getClass()).info(
+							String.format("%s accept runned for %dms", s,
+									Calendar.getInstance().getTimeInMillis()
+											- start.getTimeInMillis()));
 			} catch (Exception e) {
 				Logger.getLogger(getClass()).error(e.getMessage(), e);
 			}
