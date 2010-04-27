@@ -1,6 +1,9 @@
 package br.com.gennex.socket.tcpcommand;
 
+import java.util.Calendar;
 import java.util.HashMap;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.log4j.Logger;
 
@@ -15,11 +18,80 @@ import br.com.gennex.socket.tcpcommand.messages.responses.FppsErrorResponse;
 
 public class TcpCommandSocket extends br.com.gennex.socket.Socket {
 
+	private class RequestToRun {
+		private final TcpRequestHandler handler;
+		private final TcpRequest request;
+
+		RequestToRun(TcpRequestHandler handler, TcpRequest request) {
+			this.handler = handler;
+			this.request = request;
+		}
+	}
+
+	private class RequestRunner implements Runnable {
+		private final TcpCommandSocket owner;
+		private BlockingQueue<RequestToRun> queue = new LinkedBlockingQueue<RequestToRun>();
+
+		RequestRunner(TcpCommandSocket owner) {
+			this.owner = owner;
+		}
+
+		@Override
+		public void run() {
+			try {
+				process();
+			} catch (Exception e) {
+				Logger.getLogger(getClass()).error(e.getMessage(), e);
+			}
+		}
+
+		private void process() throws Exception {
+			do {
+				RequestToRun requestToRun = queue.take();
+				if (requestToRun == null)
+					continue;
+
+				TcpResponse response = null;
+
+				try {
+					Calendar start = Calendar.getInstance();
+					response = requestToRun.handler.process(owner,
+							requestToRun.request);
+					Calendar end = Calendar.getInstance();
+					if (end.getTimeInMillis() - start.getTimeInMillis() > 1000)
+						Logger.getLogger(getClass()).info(
+								String.format("%s execution runned for %dms",
+										requestToRun.request.getTcpMessage(),
+										Calendar.getInstance()
+												.getTimeInMillis()
+												- start.getTimeInMillis()));
+				} catch (UnsupportedOperationException e) {
+					response = handleInvalidRequest(requestToRun.request, e);
+				} catch (Exception e) {
+					response = handleRequestException(requestToRun.request, e);
+				}
+
+				if (response == null)
+					continue;
+				owner.send(response);
+			} while (Thread.currentThread().isAlive());
+		}
+	}
+
+	private final RequestRunner requestRunner;
+
 	private HashMap<String, TcpRequestHandler> handlerList = new HashMap<String, TcpRequestHandler>();
 
 	public TcpCommandSocket(java.net.Socket socket) {
 		super(socket);
 		addHandler(new InvalidTcpRequest(), new InvalidTcpRequestHandler());
+
+		this.requestRunner = new RequestRunner(this);
+		Thread requestRunner = new Thread(this.requestRunner, getClass()
+				.getSimpleName().concat("-").concat(
+						this.requestRunner.getClass().getSimpleName()));
+		requestRunner.setDaemon(true);
+		requestRunner.start();
 	}
 
 	public void addHandler(TcpRequest request, TcpRequestHandler requestHandler) {
@@ -32,18 +104,18 @@ public class TcpCommandSocket extends br.com.gennex.socket.Socket {
 
 	private TcpResponse handleInvalidRequest(TcpRequest request,
 			UnsupportedOperationException e) {
-		TcpResponse response;
 		if (Logger.getLogger(getClass()).isDebugEnabled())
 			Logger.getLogger(getClass()).debug(
 					new StringBuffer("Invalid request: ").append(request
 							.getTcpMessage()));
+		TcpResponse response;
 		response = new FppsErrorResponse(request, e);
 		return response;
 	}
 
 	private TcpResponse handleRequestException(TcpRequest request, Exception e) {
-		TcpResponse response;
 		Logger.getLogger(getClass()).error(e.getMessage(), e);
+		TcpResponse response;
 		response = new FppsErrorResponse(request, e);
 		return response;
 	}
@@ -54,18 +126,8 @@ public class TcpCommandSocket extends br.com.gennex.socket.Socket {
 			throw new UnsupportedOperationException();
 
 		TcpRequestHandler handler = handlerList.get(strRequest);
-
-		TcpResponse response = null;
-
-		try {
-			response = handler.process(this, request);
-		} catch (UnsupportedOperationException e) {
-			response = handleInvalidRequest(request, e);
-		} catch (Exception e) {
-			response = handleRequestException(request, e);
-		}
-
-		return response;
+		this.requestRunner.queue.offer(new RequestToRun(handler, request));
+		return null;
 	}
 
 	@Override
