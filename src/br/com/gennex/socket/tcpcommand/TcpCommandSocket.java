@@ -48,7 +48,6 @@ public class TcpCommandSocket extends br.com.gennex.socket.Socket {
 		return response;
 	}
 
-	@Override
 	public TcpResponse processRequest(TcpRequestCommand request) {
 		String strRequest = request.getCommand().toUpperCase();
 		if (!handlerList.containsKey(strRequest))

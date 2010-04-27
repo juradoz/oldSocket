@@ -198,11 +198,11 @@ public abstract class Socket extends Observable implements Runnable,
 		send(new FppsResponse(getClass().getSimpleName().concat("()")));
 	}
 
-	public synchronized void setInputFilter(TcpMessageFilter inputFilter) {
+	public void setInputFilter(TcpMessageFilter inputFilter) {
 		this.inputFilter = inputFilter;
 	}
 
-	public synchronized void setOutputFilter(TcpMessageFilter outputFilter) {
+	public void setOutputFilter(TcpMessageFilter outputFilter) {
 		this.outputFilter = outputFilter;
 	}
 
