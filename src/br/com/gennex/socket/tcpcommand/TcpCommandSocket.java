@@ -2,6 +2,7 @@ package br.com.gennex.socket.tcpcommand;
 
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -80,7 +81,7 @@ public class TcpCommandSocket extends br.com.gennex.socket.Socket {
 
 	private final RequestRunner requestRunner;
 
-	private HashMap<String, TcpRequestHandler> handlerList = new HashMap<String, TcpRequestHandler>();
+	private Map<String, TcpRequestHandler> handlerList = new HashMap<String, TcpRequestHandler>();
 
 	public TcpCommandSocket(java.net.Socket socket) {
 		super(socket);
