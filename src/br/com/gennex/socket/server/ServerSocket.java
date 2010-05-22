@@ -120,8 +120,8 @@ public class ServerSocket implements Runnable, Observer {
 
 	public void close() throws IOException {
 		synchronized (socketsAtivos) {
-			Iterator<Socket> it = socketsAtivos.iterator();
-			while (it.hasNext()) {
+
+			for (Iterator<Socket> it = socketsAtivos.iterator(); it.hasNext();) {
 				Socket socket = it.next();
 				try {
 					socket.disconnect();
