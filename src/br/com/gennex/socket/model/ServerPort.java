@@ -11,6 +11,23 @@ public class ServerPort {
 		this.serverPort = port;
 	}
 
+	public int getServerPort() {
+		return serverPort;
+	}
+
+	@Override
+	public String toString() {
+		return String.valueOf(getServerPort());
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + serverPort;
+		return result;
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -23,14 +40,5 @@ public class ServerPort {
 		if (serverPort != other.serverPort)
 			return false;
 		return true;
-	}
-
-	public int getServerPort() {
-		return serverPort;
-	}
-
-	@Override
-	public String toString() {
-		return String.valueOf(getServerPort());
 	}
 }

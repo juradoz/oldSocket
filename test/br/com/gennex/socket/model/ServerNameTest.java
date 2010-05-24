@@ -12,9 +12,9 @@ import org.junit.Test;
 
 public class ServerNameTest {
 
-	private final String nullName = "";
-	private final String name = "TESTE";
-	private final String name2 = "TESTE2";
+	private static final String nullName = "";
+	private static final String name = "TESTE";
+	private static final String name2 = "TESTE2";
 
 	private ServerName serverName;
 

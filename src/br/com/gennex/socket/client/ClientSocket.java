@@ -27,7 +27,7 @@ import br.com.gennex.socket.model.ServerPort;
  */
 public class ClientSocket extends TimerTask implements Observer {
 
-	public class SocketNaoConectado extends Exception {
+	public static class SocketNaoConectado extends Exception {
 		private static final long serialVersionUID = 1L;
 
 		public SocketNaoConectado(String string) {

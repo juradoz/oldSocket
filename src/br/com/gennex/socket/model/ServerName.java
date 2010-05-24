@@ -11,6 +11,24 @@ public class ServerName {
 		this.serverName = name;
 	}
 
+	public String getServerName() {
+		return this.serverName;
+	}
+
+	@Override
+	public String toString() {
+		return getServerName();
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((serverName == null) ? 0 : serverName.hashCode());
+		return result;
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -26,14 +44,5 @@ public class ServerName {
 		} else if (!serverName.equals(other.serverName))
 			return false;
 		return true;
-	}
-
-	public String getServerName() {
-		return this.serverName;
-	}
-
-	@Override
-	public String toString() {
-		return getServerName();
 	}
 }

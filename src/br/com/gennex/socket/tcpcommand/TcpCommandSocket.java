@@ -19,7 +19,7 @@ import br.com.gennex.socket.tcpcommand.messages.responses.FppsErrorResponse;
 
 public class TcpCommandSocket extends br.com.gennex.socket.Socket {
 
-	private class RequestToRun {
+	private static class RequestToRun {
 		private final TcpRequestHandler handler;
 		private final TcpRequest request;
 
@@ -88,6 +88,10 @@ public class TcpCommandSocket extends br.com.gennex.socket.Socket {
 		addHandler(new InvalidTcpRequest(), new InvalidTcpRequestHandler());
 
 		this.requestRunner = new RequestRunner(this);
+		inicializaRequestRunner();
+	}
+
+	private void inicializaRequestRunner() {
 		Thread requestRunner = new Thread(this.requestRunner, getClass()
 				.getSimpleName().concat("-").concat(
 						this.requestRunner.getClass().getSimpleName()));
@@ -127,7 +131,8 @@ public class TcpCommandSocket extends br.com.gennex.socket.Socket {
 			throw new UnsupportedOperationException();
 
 		TcpRequestHandler handler = handlerList.get(strRequest);
-		this.requestRunner.queue.offer(new RequestToRun(handler, request));
+		if (!this.requestRunner.queue.offer(new RequestToRun(handler, request)))
+			throw new RuntimeException();
 		return null;
 	}
 

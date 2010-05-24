@@ -40,7 +40,8 @@ public class ServerSocket implements Runnable, Observer {
 		}
 
 		public void addSocket(java.net.Socket socket) {
-			sockets.offer(socket);
+			if (!sockets.offer(socket))
+				throw new RuntimeException();
 		}
 
 		@Override
@@ -109,6 +110,10 @@ public class ServerSocket implements Runnable, Observer {
 
 		this.socketAccepter = new SocketAccepter(this, socketFactory);
 
+		inicializaThreads(isDaemon);
+	}
+
+	private void inicializaThreads(boolean isDaemon) {
 		Thread t = new Thread(socketAccepter);
 		t.setDaemon(true);
 		t.start();

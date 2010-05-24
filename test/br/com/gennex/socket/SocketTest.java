@@ -45,7 +45,7 @@ public class SocketTest {
 		}
 	}
 
-	private class MockClientSocket extends TcpCommandSocket {
+	private static class MockClientSocket extends TcpCommandSocket {
 
 		private boolean recebido = false;
 
