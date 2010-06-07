@@ -141,7 +141,7 @@ public class ClientSocket extends TimerTask implements Observer {
 	}
 
 	/**
-	 * @return retorna a factory responsável pela geração dos sockets de conexão
+	 * @return retorna a factory responsavel pela geracao dos sockets de conexao
 	 *         que sao mantidos por este objeto.
 	 */
 	public final SocketFactory getSocketFactory() {
@@ -165,7 +165,7 @@ public class ClientSocket extends TimerTask implements Observer {
 	/**
 	 * @param host
 	 *            modifica o host onde o socket se conecta. Se o valor for
-	 *            modificado enquanto uma conexão está ativa, ela é terminada e
+	 *            modificado enquanto uma conexï¿½o estï¿½ ativa, ela ï¿½ terminada e
 	 *            uma nova se inicia.
 	 */
 	public final void setHost(ServerName host) {
@@ -185,7 +185,7 @@ public class ClientSocket extends TimerTask implements Observer {
 	/**
 	 * @param port
 	 *            modifica a porta onde o socket se conecta. Se o valor for
-	 *            modificado enquanto uma conexão está ativa, ela é terminada e
+	 *            modificado enquanto uma conexao esta ativa, ela e terminada e
 	 *            uma nova se inicia.
 	 */
 	public final void setPort(ServerPort port) {

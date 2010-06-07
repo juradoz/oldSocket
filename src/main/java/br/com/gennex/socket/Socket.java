@@ -41,7 +41,7 @@ public abstract class Socket extends Observable implements Runnable,
 
 	/**
 	 * @param socket
-	 *            o Socket da conexão que será gerenciado.
+	 *            o Socket da conexao que sera gerenciado.
 	 */
 	public Socket(java.net.Socket socket) {
 		super();
@@ -110,7 +110,7 @@ public abstract class Socket extends Observable implements Runnable,
 	}
 
 	/**
-	 * Devolve a situação atual da conexão do socket.
+	 * Devolve a situacao atual da conexao do socket.
 	 * 
 	 * @return true se conectado, false caso desconectado.
 	 */

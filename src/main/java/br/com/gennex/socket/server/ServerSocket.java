@@ -19,8 +19,8 @@ import br.com.gennex.socket.Socket.EventDisconnected;
 import br.com.gennex.socket.model.ServerPort;
 
 /**
- * Classe que implementa um servidor TCP que ouve as conexões e cria threads
- * específicas para cada comportamento.
+ * Classe que implementa um servidor TCP que ouve as conexoes e cria threads
+ * especificas para cada comportamento.
  * 
  * @author Daniel Jurado
  * 
@@ -81,7 +81,7 @@ public class ServerSocket implements Runnable, Observer {
 
 	/**
 	 * @param port
-	 *            a porta que o servidor deverá aceitar novas conexões.
+	 *            a porta que o servidor devera aceitar novas conexoes.
 	 * @param socketFactory
 	 *            a factory que deve criar os sockets de acordo com os
 	 *            comportamentos esperados.
@@ -92,7 +92,7 @@ public class ServerSocket implements Runnable, Observer {
 
 	/**
 	 * @param port
-	 *            a porta que o servidor deverá aceitar novas conexões.
+	 *            a porta que o servidor devera aceitar novas conexoes.
 	 * @param socketFactory
 	 *            a factory que deve criar os sockets de acordo com os
 	 *            comportamentos esperados.
