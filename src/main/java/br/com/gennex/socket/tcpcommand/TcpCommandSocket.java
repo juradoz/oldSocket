@@ -61,7 +61,8 @@ public class TcpCommandSocket extends br.com.gennex.socket.Socket {
 					Calendar end = Calendar.getInstance();
 					if (end.getTimeInMillis() - start.getTimeInMillis() > 1000)
 						Logger.getLogger(getClass()).info(
-								String.format("%s execution runned for %dms",
+								String.format(
+										"%s execution runned for %dms",
 										requestToRun.request.getTcpMessage(),
 										Calendar.getInstance()
 												.getTimeInMillis()
@@ -93,8 +94,8 @@ public class TcpCommandSocket extends br.com.gennex.socket.Socket {
 
 	private void inicializaRequestRunner() {
 		Thread requestRunner = new Thread(this.requestRunner, getClass()
-				.getSimpleName().concat("-").concat(
-						this.requestRunner.getClass().getSimpleName()));
+				.getSimpleName().concat("-")
+				.concat(this.requestRunner.getClass().getSimpleName()));
 		requestRunner.setDaemon(true);
 		requestRunner.start();
 	}
@@ -107,15 +108,16 @@ public class TcpCommandSocket extends br.com.gennex.socket.Socket {
 		handlerList.clear();
 	}
 
+	private boolean respondeInvalidRequest = true;
+
 	private TcpResponse handleInvalidRequest(TcpRequest request,
 			UnsupportedOperationException e) {
 		if (Logger.getLogger(getClass()).isDebugEnabled())
 			Logger.getLogger(getClass()).debug(
 					new StringBuffer("Invalid request: ").append(request
 							.getTcpMessage()));
-		TcpResponse response;
-		response = new FppsErrorResponse(request, e);
-		return response;
+		return respondeInvalidRequest ? new FppsErrorResponse(request, e)
+				: null;
 	}
 
 	private TcpResponse handleRequestException(TcpRequest request, Exception e) {
@@ -156,6 +158,10 @@ public class TcpCommandSocket extends br.com.gennex.socket.Socket {
 
 	public TcpRequestHandler removeHandler(TcpRequest request) {
 		return handlerList.remove(request.toString());
+	}
+
+	protected void setRespondeInvalidRequest(boolean respondeInvalidRequest) {
+		this.respondeInvalidRequest = respondeInvalidRequest;
 	}
 
 }
