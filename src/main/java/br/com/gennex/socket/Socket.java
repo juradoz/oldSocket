@@ -220,7 +220,7 @@ public abstract class Socket extends Observable implements Runnable,
 			waitLines();
 			Logger.getLogger(getClass()).info("Disconnected!");
 		} catch (SocketException e) {
-			Logger.getLogger(getClass()).error(e.getMessage(), e);
+			Logger.getLogger(getClass()).warn(e.getMessage());
 		} catch (SocketTimeoutException e) {
 			Logger.getLogger(getClass()).warn(e.getMessage());
 		} catch (IOException e) {
