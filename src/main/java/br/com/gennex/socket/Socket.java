@@ -209,10 +209,13 @@ public abstract class Socket extends Observable implements Runnable,
 	private void setRawSocket(java.net.Socket rawSocket) {
 		this.rawSocket = rawSocket;
 	}
+	
+	private boolean sendHello = true;
 
 	private void socketLifeCycle() {
 		notifyConnection();
-		sendHello();
+		if (isSendHello())
+			sendHello();
 		try {
 			waitLines();
 			Logger.getLogger(getClass()).info("Disconnected!");
@@ -237,6 +240,10 @@ public abstract class Socket extends Observable implements Runnable,
 		}
 	}
 
+	private boolean isSendHello() {
+		return sendHello;
+	}
+
 	private void waitLines() throws IOException {
 		do {
 			String s = bufferedreader.readLine();
@@ -258,5 +265,9 @@ public abstract class Socket extends Observable implements Runnable,
 				Logger.getLogger(getClass()).error(e.getMessage(), e);
 			}
 		} while (Thread.currentThread().isAlive());
+	}
+
+	protected void setSendHello(boolean sendHello) {
+		this.sendHello = sendHello;
 	}
 }
