@@ -1,10 +1,12 @@
 package br.com.gennex.socket.tcpcommand;
 
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 
@@ -45,10 +47,16 @@ public class TcpCommandSocket extends br.com.gennex.socket.Socket {
 				Logger.getLogger(getClass()).error(e.getMessage(), e);
 			}
 		}
+		
+		private boolean alive = true;
+		
+		public void terminate(){
+			this.alive = false;
+		}
 
 		private void process() throws Exception {
 			do {
-				RequestToRun requestToRun = queue.take();
+				RequestToRun requestToRun = queue.poll(1, TimeUnit.SECONDS);
 				if (requestToRun == null)
 					continue;
 
@@ -76,7 +84,11 @@ public class TcpCommandSocket extends br.com.gennex.socket.Socket {
 				if (response == null)
 					continue;
 				owner.send(response);
-			} while (Thread.currentThread().isAlive());
+			} while (isAlive());
+		}
+
+		private boolean isAlive() {
+			return alive;
 		}
 	}
 
@@ -162,6 +174,12 @@ public class TcpCommandSocket extends br.com.gennex.socket.Socket {
 
 	protected void setRespondeInvalidRequest(boolean respondeInvalidRequest) {
 		this.respondeInvalidRequest = respondeInvalidRequest;
+	}
+
+	@Override
+	public void disconnect() throws IOException {
+		super.disconnect();
+		requestRunner.terminate();
 	}
 
 }
