@@ -139,8 +139,8 @@ public abstract class Socket extends Observable implements Runnable,
 	 *            the received message
 	 */
 	private void logReceived(String message) {
-		logMessage(getInputFilter(), new StringBuffer("Received: ").append(
-				message).toString());
+		logMessage(getInputFilter(),
+				new StringBuffer("Received: ").append(message).toString());
 	}
 
 	/**
