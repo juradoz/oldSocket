@@ -45,6 +45,7 @@ public class ClientSocket extends TimerTask implements Observer {
 			.random() * 10000);
 
 	private int reconnectInterval = DEFAULT_RECONNECT_INTERVAL;
+	private Timer timer;
 
 	public ClientSocket(ServerName host, ServerPort port,
 			SocketFactory socketFactory) {
@@ -62,7 +63,9 @@ public class ClientSocket extends TimerTask implements Observer {
 		this.serverName = host;
 		this.serverPort = port;
 		this.socketFactory = socketFactory;
-		new Timer(getClass().getSimpleName(), isDaemon).schedule(this, 0,
+		
+		timer = new Timer(getClass().getSimpleName(), isDaemon);
+		timer.schedule(this, 0,
 				reconnectInterval);
 	}
 
@@ -231,6 +234,15 @@ public class ClientSocket extends TimerTask implements Observer {
 		if (!(arg instanceof Socket.EventDisconnected))
 			return;
 		setSocket(null);
+	}
+	
+	public void shutdown(){
+		timer.cancel();
+		try {
+			disconnect();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 }
