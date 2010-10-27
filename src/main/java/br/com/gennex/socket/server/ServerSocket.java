@@ -114,11 +114,11 @@ public class ServerSocket implements Runnable, Observer {
 	}
 
 	private void inicializaThreads(boolean isDaemon) {
-		Thread t = new Thread(socketAccepter);
+		Thread t = new Thread(socketAccepter, socketAccepter.getClass().getSimpleName());
 		t.setDaemon(true);
 		t.start();
 
-		t = new Thread(this);
+		t = new Thread(this, getClass().getSimpleName());
 		t.setDaemon(isDaemon);
 		t.start();
 	}
