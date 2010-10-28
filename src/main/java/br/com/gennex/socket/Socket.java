@@ -178,12 +178,14 @@ public abstract class Socket extends Observable implements Runnable,
 		socketLifeCycle();
 	}
 
+	private String delimitadorEnvio = "\r\n";
+
 	private void send(String message) {
 
 		logSent(message);
 
 		try {
-			printwriter.print(message + "\r\n");
+			printwriter.print(message + delimitadorEnvio);
 			printwriter.flush();
 		} catch (Exception e) {
 			Logger.getLogger(getClass()).error(e.getMessage(), e);
@@ -209,7 +211,7 @@ public abstract class Socket extends Observable implements Runnable,
 	private void setRawSocket(java.net.Socket rawSocket) {
 		this.rawSocket = rawSocket;
 	}
-	
+
 	private boolean sendHello = true;
 
 	private void socketLifeCycle() {
@@ -269,5 +271,9 @@ public abstract class Socket extends Observable implements Runnable,
 
 	protected void setSendHello(boolean sendHello) {
 		this.sendHello = sendHello;
+	}
+
+	protected void setDelimitadorEnvio(String delimitadorEnvio) {
+		this.delimitadorEnvio = delimitadorEnvio;
 	}
 }
