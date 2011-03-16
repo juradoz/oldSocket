@@ -63,8 +63,7 @@ public abstract class Socket extends Observable implements Runnable,
 	}
 
 	boolean canLog(TcpMessageFilter filter, String message) {
-		return filter == null || filter.accept(message)
-				|| Logger.getLogger(getClass()).isDebugEnabled();
+		return filter == null || filter.accept(message);
 	}
 
 	/**
@@ -127,8 +126,11 @@ public abstract class Socket extends Observable implements Runnable,
 	 *            the message to log
 	 */
 	private void logMessage(TcpMessageFilter filter, String message) {
-		if (!canLog(filter, message))
+		if (!canLog(filter, message)) {
+			if (Logger.getLogger(getClass()).isDebugEnabled())
+				Logger.getLogger(getClass()).debug(message);
 			return;
+		}
 		Logger.getLogger(getClass()).info(message);
 	}
 
